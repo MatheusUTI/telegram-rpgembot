@@ -1,0 +1,32 @@
+{
+  "humano": {
+    "nome_exibido": "Humano",
+    "descricao": "Adaptáveis e ambiciosos, os humanos são a raça mais comum, conhecida por sua diversidade e tenacidade.",
+    "ajustes_atributo": {
+      "for": 1, "des": 1, "con": 1, "int": 1, "sab": 1, "car": 1
+    },
+    "deslocamento": 9,
+    "tracos_raciais": ["Versátil", "Um Idioma Adicional (Abstrato)"]
+  },
+  "elfo": {
+    "nome_exibido": "Elfo (Alto Elfo)",
+    "descricao": "Graciosos e conectados à magia ancestral, os altos elfos valorizam o conhecimento e as artes arcanas.",
+    "ajustes_atributo": { "des": 2, "int": 1 },
+    "deslocamento": 9,
+    "tracos_raciais": ["Visão no Escuro", "Herança Feérica", "Transe", "Proficiência (Percepção)", "Truque de Mago (Abstrato)"]
+  },
+  "anao": {
+    "nome_exibido": "Anão (da Montanha)",
+    "descricao": "Resistentes e habilidosos artesãos, os anões da montanha são conhecidos por sua força e lealdade.",
+    "ajustes_atributo": { "for": 2, "con": 2 },
+    "deslocamento": 7.5,
+    "tracos_raciais": ["Visão no Escuro", "Resiliência Anã", "Treinamento de Combate Anão (Machados, Machadinhas, Martelos)", "Proficiência (Ferramentas de Ferreiro - Abstrato)"]
+  },
+  "halfling": {
+    "nome_exibido": "Halfling (Pés Leves)",
+    "descricao": "Alegres e curiosos, os halflings pés leves são conhecidos por sua sorte e habilidade de se misturar.",
+    "ajustes_atributo": { "des": 2, "car": 1 },
+    "deslocamento": 7.5,
+    "tracos_raciais": ["Sortudo", "Bravura", "Agilidade Halfling", "Furtividade Natural"]
+  }
+}

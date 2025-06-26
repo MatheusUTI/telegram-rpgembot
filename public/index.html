@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Personagem - As Terras de Aethel</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+    <div class="ficha-container">
+        <header>
+            <h1>Ficha de Aventureiro</h1>
+        </header>
+
+        <section class="info-principal">
+            <h2>Nome: <span id="char-nome">Carregando...</span></h2>
+            <p><strong>Classe:</strong> <span id="char-classe"></span> | <strong>Nível:</strong> <span id="char-nivel"></span></p>
+        </section>
+
+        <section class="background">
+            <h3>História</h3>
+            <p id="char-background"></p>
+        </section>
+
+        <section class="detalhes">
+            <div><strong>Motivação:</strong> <span id="char-motivacao"></span></div>
+            <div><strong>Fraqueza:</strong> <span id="char-falha"></span></div>
+            <div><strong>Ofício:</strong> <span id="char-oficio"></span></div>
+        </section>
+
+        <section class="habilidades">
+            <h3>Habilidades Aprendidas</h3>
+            <ul id="char-habilidades">
+                </ul>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

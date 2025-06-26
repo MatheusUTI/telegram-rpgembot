@@ -1,0 +1,181 @@
+{
+  "guerreiro": {
+    "nome_exibido": "Guerreiro",
+    "descricao": "Mestre de armas e táticas, o guerreiro é a espinha dorsal de qualquer grupo de aventureiros.",
+    "oficio": "Forja de Armas",
+    "dado_vida": "d10",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 2,
+    "pericias_opcoes": ["Acrobacia", "Adestrar Animais", "Atletismo", "História", "Intimidação", "Intuição", "Percepção", "Sobrevivência"],
+    "proficiencia_armas": ["simples", "marciais"],
+    "equipamento_inicial": [
+      { "nome": "Cota de Malha", "tipo": "armadura_pesada_ref", "ca_base": 16 },
+      { "nome": "Espada Longa", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "for", "dado_dano": "1d8", "tipo_dano_arma": "cortante", "propriedades_arma": ["versátil (1d10)"]},
+      { "nome": "Escudo", "tipo": "armadura_aux", "ca_bonus": 2 },
+      { "nome": "Duas Machadinhas", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "for", "dado_dano": "1d6", "tipo_dano_arma": "cortante", "propriedades_arma": ["leve", "arremesso (6/18m)"], "quantidade": 2}
+    ],
+    "habilidades": [
+      { "nome": "Estilo de Luta: Defesa", "nivel": 1, "descricao": "Enquanto estiver usando armadura, você ganha +1 de bônus na CA." },
+      { "nome": "Estilo de Luta: Duelo", "nivel": 1, "descricao": "Quando empunha uma arma corpo-a-corpo em uma só mão e nenhuma outra, você ganha +2 de bônus nas rolagens de dano com essa arma." },
+      { "nome": "Estilo de Luta: Arquearia", "nivel": 1, "descricao": "Você ganha +2 de bônus nas rolagens de ataque com armas de ataque à distância." },
+      { "nome": "Estilo de Luta: Grandes Armas", "nivel": 1, "descricao": "Quando rolar 1 ou 2 num dado de dano de um ataque com arma corpo-a-corpo que esteja empunhando com as duas mãos, você pode rolar o dado novamente e deve usar a nova rolagem." },
+      { "nome": "Retomar o Fôlego", "nivel": 1, "descricao": "No seu turno, você pode usar uma ação bônus para recuperar PV igual a 1d10 + seu nível de guerreiro. Você precisa terminar um descanso curto ou longo antes de usar esta característica novamente." },
+      { "nome": "Surto de Ação", "nivel": 2, "descricao": "No seu turno, você pode realizar uma ação adicional. Uma vez que usar esta característica, você precisa terminar um descanso curto ou longo para usá-la novamente." },
+      { "nome": "Arquétipo Marcial: Campeão", "nivel": 3, "descricao": "Seus ataques com armas têm uma margem de crítico de 19-20." },
+      { "nome": "Arquétipo Marcial: Mestre de Batalha", "nivel": 3, "descricao": "Você aprende manobras que são abastecidas por dados de superioridade especiais." },
+      { "nome": "Arquétipo Marcial: Cavaleiro Arcano", "nivel": 3, "descricao": "Você combina proeza marcial com magia." },
+      { "nome": "Ataque Extra", "nivel": 5, "descricao": "Você pode atacar duas vezes, em vez de uma, sempre que usar a ação Atacar no seu turno." }
+    ]
+  },
+  "mago": {
+    "nome_exibido": "Mago",
+    "descricao": "Um estudioso da trama da realidade, o mago manipula as energias arcanas.",
+    "oficio": "Caligrafia Arcana",
+    "dado_vida": "d6",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 2,
+    "pericias_opcoes": ["Arcanismo", "História", "Intuição", "Investigação", "Medicina", "Religião"],
+    "proficiencia_armas": ["adagas", "dardos", "fundas", "cajados", "bestas leves"],
+    "equipamento_inicial": [
+      { "nome": "Cajado", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "for", "dado_dano": "1d6", "tipo_dano_arma": "concussão", "propriedades_arma": ["versátil (1d8)"] },
+      { "nome": "Grimório", "tipo": "item_chave" },
+      { "nome": "Bolsa de Componentes", "tipo": "item_chave_foco_arcano" }
+    ],
+    "habilidades": [
+      { "nome": "Conjuração (Mago)", "nivel": 1, "descricao": "Você conhece truques e pode preparar magias do seu grimório." },
+      { "nome": "Recuperação Arcana", "nivel": 1, "descricao": "Após um descanso curto, você pode recuperar alguns espaços de magia gastos." },
+      { "nome": "Tradição Arcana: Escola de Abjuração", "nivel": 2, "descricao": "Foco em magias de proteção e banimento." },
+      { "nome": "Tradição Arcana: Escola de Evocação", "nivel": 2, "descricao": "Foco em magias de dano elemental." },
+      { "nome": "Tradição Arcana: Escola de Ilusão", "nivel": 2, "descricao": "Foco em enganar os sentidos." }
+    ]
+  },
+  "ladino": {
+    "nome_exibido": "Ladino",
+    "descricao": "Mestre das sombras, das habilidades e das oportunidades.",
+    "oficio": "Criação de Ferramentas/Venenos",
+    "dado_vida": "d8",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 4,
+    "pericias_opcoes": ["Acrobacia", "Atletismo", "Atuação", "Enganação", "Furtividade", "Intimidação", "Intuição", "Investigação", "Percepção", "Persuasão", "Prestidigitação"],
+    "proficiencia_armas": ["simples", "bestas de mão", "espadas longas", "rapieiras", "espadas curtas"],
+    "equipamento_inicial": [
+      { "nome": "Rapieira", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "des", "dado_dano": "1d8", "tipo_dano_arma": "perfurante", "propriedades_arma": ["acuidade"] },
+      { "nome": "Adaga", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "des", "dado_dano": "1d4", "tipo_dano_arma": "perfurante", "propriedades_arma": ["acuidade", "leve", "arremesso (6/18m)"], "quantidade": 2 },
+      { "nome": "Arco Curto", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "des", "dado_dano": "1d6", "tipo_dano_arma": "perfurante", "propriedades_arma": ["munição (24/96m)", "duas mãos"] },
+      { "nome": "Aljava com 20 Flechas", "tipo": "municao" },
+      { "nome": "Armadura de Couro", "tipo": "armadura_leve_ref", "ca_base": 11 },
+      { "nome": "Ferramentas de Ladrão", "tipo": "ferramenta" }
+    ],
+    "habilidades": [
+      { "nome": "Especialização", "nivel": 1, "descricao": "Escolha duas de suas proficiências em perícias. Seu bônus de proficiência é dobrado para qualquer teste de habilidade que você fizer com elas." },
+      { "nome": "Ataque Furtivo", "nivel": 1, "descricao": "Uma vez por turno, pode causar dano extra (1d6 no nível 1) a uma criatura que você atinge com um ataque se tiver vantagem ou um aliado adjacente." },
+      { "nome": "Gíria de Ladrão", "nivel": 1, "descricao": "Você conhece os códigos secretos, dialetos e sinais usados por ladrões." },
+      { "nome": "Ação Ardilosa", "nivel": 2, "descricao": "Você pode usar uma ação bônus para Correr, Desengajar ou se Esconder." },
+      { "nome": "Arquétipo Ladino: Assassino", "nivel": 3, "descricao": "Você é um mestre em emboscadas e ataques letais." },
+      { "nome": "Arquétipo Ladino: Ladrão", "nivel": 3, "descricao": "Suas mãos são incrivelmente rápidas para usar objetos e desarmar armadilhas." },
+      { "nome": "Arquétipo Ladino: Trapaceiro Arcano", "nivel": 3, "descricao": "Você incrementa suas habilidades ladinas com magia." }
+    ]
+  },
+  "clerigo": {
+    "nome_exibido": "Clérigo",
+    "descricao": "Um canal da vontade de uma divindade, o clérigo é um farol de fé.",
+    "oficio": "Alquimia Sagrada",
+    "dado_vida": "d8",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 2,
+    "pericias_opcoes": ["História", "Intuição", "Medicina", "Persuasão", "Religião"],
+    "proficiencia_armas": ["simples"],
+    "equipamento_inicial": [
+      { "nome": "Maça", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "for", "dado_dano": "1d6", "tipo_dano_arma": "concussão" },
+      { "nome": "Armadura de Escamas", "tipo": "armadura_media_ref", "ca_base": 14 },
+      { "nome": "Escudo", "tipo": "armadura_aux", "ca_bonus": 2 },
+      { "nome": "Símbolo Sagrado", "tipo": "item_chave_foco_divino" }
+    ],
+    "habilidades": [
+      { "nome": "Conjuração (Clérigo)", "nivel": 1, "descricao": "Você pode preparar e conjurar magias divinas." },
+      { "nome": "Domínio Divino: Vida", "nivel": 1, "descricao": "Suas magias de cura são mais potentes. Você ganha proficiência com armadura pesada." },
+      { "nome": "Domínio Divino: Luz", "nivel": 1, "descricao": "Você pode usar sua reação para impor desvantagem cegando um inimigo com luz divina." },
+      { "nome": "Domínio Divino: Guerra", "nivel": 1, "descricao": "Você pode realizar um ataque extra como ação bônus. Ganha proficiência com armas marciais e armadura pesada." },
+      { "nome": "Domínio Divino: Conhecimento", "nivel": 1, "descricao": "Você ganha proficiências e pode usar Canalizar Divindade para perícias." },
+      { "nome": "Domínio Divino: Natureza", "nivel": 1, "descricao": "Você ganha perícias e pode encantar animais e plantas." },
+      { "nome": "Domínio Divino: Tempestade", "nivel": 1, "descricao": "Você ganha proficiências e pode retaliar com dano de trovão." },
+      { "nome": "Domínio Divino: Trapaça", "nivel": 1, "descricao": "Você pode criar ilusões e ter vantagem em furtividade." },
+      { "nome": "Canalizar Divindade: Expulsar Mortos-Vivos", "nivel": 2, "descricao": "Você pode usar seu símbolo sagrado para repelir mortos-vivos." }
+    ]
+  },
+  "barbaro": {
+    "nome_exibido": "Bárbaro",
+    "descricao": "Vindo das fronteiras selvagens, o bárbaro é uma força da natureza.",
+    "oficio": "Curtume e Caça",
+    "dado_vida": "d12",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 2,
+    "pericias_opcoes": ["Adestrar Animais", "Atletismo", "Intimidação", "Natureza", "Percepção", "Sobrevivência"],
+    "proficiencia_armas": ["simples", "marciais"],
+    "equipamento_inicial": [
+      { "nome": "Machado Grande", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "for", "dado_dano": "1d12", "tipo_dano_arma": "cortante", "propriedades_arma": ["pesada", "duas mãos"] },
+      { "nome": "Duas Machadinhas", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "for", "dado_dano": "1d6", "tipo_dano_arma": "cortante", "propriedades_arma": ["leve", "arremesso (6/18m)"], "quantidade": 2 },
+      { "nome": "Quatro Azagaias", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "for", "dado_dano": "1d6", "tipo_dano_arma": "perfurante", "propriedades_arma": ["arremesso (9/36m)"], "quantidade": 4 }
+    ],
+    "habilidades": [
+      { "nome": "Fúria", "nivel": 1, "descricao": "Em combate, você pode entrar em fúria, ganhando bônus em ataques de Força, dano e resistência a dano." },
+      { "nome": "Defesa sem Armadura (Bárbaro)", "nivel": 1, "descricao": "Enquanto não estiver usando armadura, sua CA é 10 + seu modificador de Destreza + seu modificador de Constituição." },
+      { "nome": "Ataque Descuidado", "nivel": 2, "descricao": "Você pode atacar com vantagem, mas os ataques contra você também terão vantagem." },
+      { "nome": "Sentido de Perigo", "nivel": 2, "descricao": "Você tem vantagem em testes de Destreza contra efeitos que pode ver, como armadilhas e magias." },
+      { "nome": "Caminho Primitivo: Caminho do Berserker", "nivel": 3, "descricao": "Sua fúria se torna um frenesi implacável." },
+      { "nome": "Caminho Primitivo: Caminho do Guerreiro Totêmico", "nivel": 3, "descricao": "Você comunga com espíritos animais que concedem benefícios em fúria." }
+    ]
+  },
+  "bardo": {
+    "nome_exibido": "Bardo",
+    "descricao": "Um mestre da música, da palavra e da magia.",
+    "oficio": "Criação de Instrumentos Musicais",
+    "dado_vida": "d8",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 3,
+    "pericias_opcoes": ["Acrobacia", "Adestrar Animais", "Arcanismo", "Atletismo", "Atuação", "Enganação", "Furtividade", "História", "Intimidação", "Intuição", "Investigação", "Medicina", "Natureza", "Percepção", "Persuasão", "Prestidigitação", "Religião", "Sobrevivência"],
+    "proficiencia_armas": ["simples", "bestas de mão", "espadas longas", "rapieiras", "espadas curtas"],
+    "equipamento_inicial": [
+      { "nome": "Rapieira", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "des", "dado_dano": "1d8", "tipo_dano_arma": "perfurante", "propriedades_arma": ["acuidade"] },
+      { "nome": "Adaga", "tipo": "arma_equipavel", "tipo_arma_prof": "simples", "atributo_padrao": "des", "dado_dano": "1d4", "tipo_dano_arma": "perfurante", "propriedades_arma": ["acuidade", "leve", "arremesso (6/18m)"] },
+      { "nome": "Alaúde", "tipo": "instrumento_musical_foco_arcano" },
+      { "nome": "Armadura de Couro", "tipo": "armadura_leve_ref", "ca_base": 11 }
+    ],
+    "habilidades": [
+      { "nome": "Conjuração (Bardo)", "nivel": 1, "descricao": "Você pode conjurar magias de bardo usando Carisma." },
+      { "nome": "Inspiração de Bardo", "nivel": 1, "descricao": "Você pode usar uma ação bônus para inspirar um aliado, concedendo-lhe um dado de Inspiração (d6 no nível 1)." },
+      { "nome": "Faz-Tudo (Jack of All Trades)", "nivel": 2, "descricao": "Você pode adicionar metade do seu bônus de proficiência a qualquer teste de habilidade que você não seja proficiente." },
+      { "nome": "Canção de Descanso", "nivel": 2, "descricao": "Durante um descanso curto, você pode usar música para ajudar seus aliados a se recuperarem melhor." },
+      { "nome": "Colégio de Bardo: Colégio do Conhecimento", "nivel": 3, "descricao": "Você é um repositório de sabedoria e pode usar sua Inspiração para atrapalhar inimigos." },
+      { "nome": "Colégio de Bardo: Colégio da Bravura", "nivel": 3, "descricao": "Você inspira coragem no campo de batalha, ganhando proficiências marciais." },
+      { "nome": "Especialização em Perícia (Bardo)", "nivel": 3, "descricao": "Escolha duas de suas proficiências em perícias. Seu bônus de proficiência é dobrado para elas." }
+    ]
+  },
+  "patrulheiro": {
+    "nome_exibido": "Patrulheiro",
+    "descricao": "Um guerreiro das selvas e fronteiras, especialista em sobrevivência e combate.",
+    "oficio": "Herborismo e Criação de Armadilhas",
+    "dado_vida": "d10",
+    "pericias_fixas": [],
+    "pericias_escolha_num": 3,
+    "pericias_opcoes": ["Adestrar Animais", "Atletismo", "Furtividade", "Intuição", "Investigação", "Natureza", "Percepção", "Sobrevivência"],
+    "proficiencia_armas": ["simples", "marciais"],
+    "equipamento_inicial": [
+      { "nome": "Armadura de Escamas", "tipo": "armadura_media_ref", "ca_base": 14 },
+      { "nome": "Duas Espadas Curtas", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "des", "dado_dano": "1d6", "tipo_dano_arma": "perfurante", "propriedades_arma": ["acuidade", "leve"], "quantidade": 2 },
+      { "nome": "Arco Longo", "tipo": "arma_equipavel", "tipo_arma_prof": "marcial", "atributo_padrao": "des", "dado_dano": "1d8", "tipo_dano_arma": "perfurante", "propriedades_arma": ["munição (45/180m)", "pesada", "duas mãos"] },
+      { "nome": "Aljava com 20 Flechas", "tipo": "municao" }
+    ],
+    "habilidades": [
+      { "nome": "Inimigo Predileto", "nivel": 1, "descricao": "Escolha um tipo de criatura como seu inimigo predileto. Você tem vantagem em testes para rastreá-los e recordar informações sobre eles." },
+      { "nome": "Explorador Natural", "nivel": 1, "descricao": "Escolha um tipo de terreno favorito. Você ganha benefícios enquanto nele." },
+      { "nome": "Estilo de Luta (Patrulheiro): Arquearia", "nivel": 2, "descricao": "Você ganha +2 de bônus nas rolagens de ataque com armas de ataque à distância." },
+      { "nome": "Estilo de Luta (Patrulheiro): Defesa", "nivel": 2, "descricao": "Enquanto estiver usando armadura, você ganha +1 de bônus na CA." },
+      { "nome": "Estilo de Luta (Patrulheiro): Duelo", "nivel": 2, "descricao": "Quando empunha uma arma corpo-a-corpo em uma só mão e nenhuma outra, você ganha +2 de bônus nas rolagens de dano com essa arma." },
+      { "nome": "Estilo de Luta (Patrulheiro): Combate com Duas Armas", "nivel": 2, "descricao": "Quando você usa duas armas, pode adicionar seu modificador de atributo ao dano do segundo ataque." },
+      { "nome": "Conjuração (Patrulheiro)", "nivel": 2, "descricao": "Você aprende a usar a essência mágica da natureza para conjurar magias." },
+      { "nome": "Arquétipo de Patrulheiro: Caçador", "nivel": 3, "descricao": "Você é um mestre em abater ameaças com táticas especializadas." },
+      { "nome": "Arquétipo de Patrulheiro: Mestre das Bestas", "nivel": 3, "descricao": "Você forma um laço com um companheiro animal que luta ao seu lado." }
+    ]
+  }
+}
