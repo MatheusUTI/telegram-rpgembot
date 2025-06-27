@@ -1,0 +1,77 @@
+{
+    "adaga": {
+      "nome_base": "Adaga", "tipo": "Arma", "dano_base": "1d4",
+      "descricao_base": "Uma lâmina curta e perfurante, favorecida pela sua velocidade e facilidade em ser escondida.",
+      "imagem_url": "/assets/items/adaga.png"
+    },
+    "espada_curta": {
+      "nome_base": "Espada Curta", "tipo": "Arma", "dano_base": "1d6",
+      "descricao_base": "Uma lâmina leve e ágil, comum entre batedores e duelistas rápidos.",
+      "imagem_url": "/assets/items/espada_curta.png"
+    },
+    "espada_longa": {
+      "nome_base": "Espada Longa", "tipo": "Arma", "dano_base": "1d8",
+      "descricao_base": "Uma arma de guerra versátil, mortal tanto com uma como com duas mãos.",
+      "imagem_url": "/assets/items/espada_longa.png"
+    },
+    "machado_de_batalha": {
+      "nome_base": "Machado de Batalha", "tipo": "Arma", "dano_base": "1d8",
+      "descricao_base": "Uma arma pesada e brutal, capaz de partir escudos e ossos com igual facilidade.",
+      "imagem_url": "/assets/items/machado_de_batalha.png"
+    },
+    "montante": {
+      "nome_base": "Montante", "tipo": "Arma", "dano_base": "2d6",
+      "descricao_base": "Uma espada de duas mãos massiva. Lenta, mas com um poder de corte devastador.",
+      "imagem_url": "/assets/items/montante.png"
+    },
+    "arco_curto": {
+      "nome_base": "Arco Curto", "tipo": "Arma", "dano_base": "1d6",
+      "descricao_base": "Um arco simples e fiável, perfeito para ataques rápidos à distância.",
+      "imagem_url": "/assets/items/arco_curto.png"
+    },
+    "cajado_de_carvalho": {
+      "nome_base": "Cajado de Carvalho", "tipo": "Arma", "dano_base": "1d6",
+      "descricao_base": "Um cajado de madeira robusta, pode servir tanto como apoio para caminhada como para um golpe certeiro.",
+      "imagem_url": "/assets/items/cajado_de_carvalho.png"
+    },
+    "armadura_de_couro": {
+      "nome_base": "Armadura de Couro", "tipo": "Armadura", "defesa_base": 11,
+      "descricao_base": "Peças de couro endurecido que oferecem proteção básica sem restringir o movimento.",
+      "imagem_url": "/assets/items/armadura_de_couro.png"
+    },
+    "cota_de_malha": {
+      "nome_base": "Cota de Malha", "tipo": "Armadura", "defesa_base": 16,
+      "descricao_base": "Anéis de metal interligados que formam uma defesa sólida contra golpes cortantes.",
+      "imagem_url": "/assets/items/cota_de_malha.png"
+    },
+    "escudo_de_madeira": {
+      "nome_base": "Escudo de Madeira", "tipo": "Armadura", "defesa_base": 2,
+      "descricao_base": "Um escudo simples, mas eficaz, para aparar golpes.",
+      "imagem_url": "/assets/items/escudo_de_madeira.png"
+    },
+    "pocao_cura_simples": {
+      "nome_base": "Poção de Cura Simples", "tipo": "Consumível",
+      "descricao_base": "Um frasco com um líquido vermelho que cintila suavemente. Restaura uma pequena porção de vitalidade.",
+      "imagem_url": "/assets/items/pocao_cura_simples.png"
+    },
+    "antidoto": {
+      "nome_base": "Antídoto", "tipo": "Consumível",
+      "descricao_base": "Um líquido turvo que neutraliza venenos comuns.",
+      "imagem_url": "/assets/items/antidoto.png"
+    },
+    "minerio_de_ferro": {
+      "nome_base": "Minério de Ferro", "tipo": "Material",
+      "descricao_base": "Uma pedra pesada com veios de ferro. Matéria-prima para um ferreiro.",
+      "imagem_url": "/assets/items/minerio_de_ferro.png"
+    },
+    "folha_de_sombra": {
+      "nome_base": "Folha de Sombra", "tipo": "Ingrediente",
+      "descricao_base": "Uma erva que cresce apenas em locais sem luz. Essencial para poções de furtividade.",
+      "imagem_url": "/assets/items/folha_de_sombra.png"
+    },
+    "pecas_de_cobre": {
+      "nome_base": "Peças de Cobre", "tipo": "Moeda",
+      "descricao_base": "A moeda mais comum do reino.",
+      "imagem_url": "/assets/items/pecas_de_cobre.png"
+    }
+  }

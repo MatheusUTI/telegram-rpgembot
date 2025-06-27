@@ -1,0 +1,67 @@
+{
+    "goblin_comum": {
+      "descricao": "Loot para um monstro humanoide fraco e comum.",
+      "moedas": "1d4",
+      "drops": [
+        {
+          "chance": 50,
+          "id_item_base": "adaga",
+          "raridade_maxima": "Comum"
+        },
+        {
+          "chance": 15,
+          "id_item_base": "escudo_de_madeira",
+          "raridade_maxima": "Incomum"
+        }
+      ]
+    },
+    "lobo_floresta": {
+      "descricao": "Loot de uma fera selvagem comum.",
+      "moedas": "0",
+      "drops": [
+        {
+          "chance": 80,
+          "id_item_base": "pele_de_lobo",
+          "raridade_maxima": "Comum"
+        },
+        {
+          "chance": 25,
+          "id_item_base": "dente_de_lobo",
+          "raridade_maxima": "Incomum"
+        }
+      ]
+    },
+    "bau_masmorra_simples": {
+      "descricao": "Um baú de madeira trancado, encontrado numa masmorra de baixo nível.",
+      "moedas": "3d8",
+      "drops": [
+        {
+          "chance": 100,
+          "id_item_base": "pocao_cura_simples",
+          "raridade_maxima": "Incomum"
+        },
+        {
+          "chance": 30,
+          "id_item_base": "espada_curta",
+          "raridade_maxima": "Raro"
+        }
+      ]
+    },
+    "chefe_orc": {
+      "descricao": "O tesouro de um líder tribal Orc, um inimigo formidável.",
+      "moedas": "5d12",
+      "drops": [
+        {
+          "chance": 100,
+          "id_item_base": "machado_de_batalha",
+          "raridade_maxima": "Raro"
+        },
+        {
+          "chance": 20,
+          "id_item_base": "cota_de_malha",
+          "raridade_maxima": "Raro",
+          "origem_preferida": "Orc"
+        }
+      ]
+    }
+  }

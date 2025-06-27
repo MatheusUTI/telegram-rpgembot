@@ -1,0 +1,27 @@
+{
+    "prefixos": {
+      "arma": [
+        { "id": "afiada", "nome": "Afiada", "efeito": "Aumenta a chance de acertar.", "raridade_minima": "Incomum", "tags": [] },
+        { "id": "pesada", "nome": "Pesada", "efeito": "Aumenta o dano, mas é mais difícil de manusear.", "raridade_minima": "Incomum", "tags": [] },
+        { "id": "cruel", "nome": "Cruel", "efeito": "Causa dano extra em acertos críticos.", "raridade_minima": "Raro", "tags": ["dano"] },
+        { "id": "flamejante", "nome": "Flamejante", "efeito": "Causa dano de fogo adicional.", "raridade_minima": "Raro", "tags": ["elemental", "fogo"] },
+        { "id": "gelada", "nome": "Gelada", "efeito": "Causa dano de gelo e pode desacelerar inimigos.", "raridade_minima": "Raro", "tags": ["elemental", "gelo"], "incompativel_com": ["fogo"] },
+        { "id": "vampirica", "nome": "Vampírica", "efeito": "Drena uma porção do dano causado como vida para o portador.", "raridade_minima": "Épico", "tags": ["vida", "necrotico"] }
+      ],
+      "armadura": [
+        { "id": "reforcada", "nome": "Reforçada", "efeito": "Aumenta a proteção base da armadura.", "raridade_minima": "Incomum", "tags": [] },
+        { "id": "flexivel", "nome": "Flexível", "efeito": "Reduz as penalidades de movimento de armaduras pesadas.", "raridade_minima": "Raro", "tags": [] },
+        { "id": "imponente", "nome": "Imponente", "efeito": "Concede vantagem em testes de Intimidação.", "raridade_minima": "Raro", "tags": ["social"] }
+      ]
+    },
+    "sufixos": {
+      "geral": [
+        { "id": "da_sorte", "nome": "da Sorte", "efeito": "Concede uma pequena chance de evitar um desastre.", "raridade_minima": "Incomum", "tags": [] },
+        { "id": "da_resiliencia", "nome": "da Resiliência", "efeito": "Aumenta a resistência a venenos ou doenças.", "raridade_minima": "Raro", "tags": ["defensivo"] },
+        { "id": "do_poder", "nome": "do Poder", "efeito": "Aumenta um dos atributos do portador.", "raridade_minima": "Raro", "tags": ["atributo"] },
+        { "id": "da_velocidade", "nome": "da Velocidade", "efeito": "Aumenta o deslocamento em combate.", "raridade_minima": "Raro", "tags": ["movimento"] },
+        { "id": "do_rei_mago", "nome": "do Rei Mago", "efeito": "Aumenta a reserva de energia mágica.", "raridade_minima": "Épico", "tags": ["magia"] },
+        { "id": "da_imortalidade", "nome": "da Imortalidade", "efeito": "Uma vez por dia, previne um golpe que seria fatal.", "raridade_minima": "Épico", "tags": ["vida", "divino"] }
+      ]
+    }
+  }

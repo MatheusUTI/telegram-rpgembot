@@ -8,6 +8,10 @@ from modules.game_logic import utils # Importa o nosso novo módulo de utilidade
 # ==============================================================================
 
 def _apresentar_escolha_pericias(config, chat_id, message_id, classe_key, player_ref, ficha_em_criacao):
+    """
+    Apresenta as opções de perícias para o jogador.
+    Se não houver escolhas, finaliza esta etapa e avança para o background.
+    """
     classe_info = config.CLASSES_DATA.get(classe_key, {})
     nome_classe_exibido = classe_info.get('nome_exibido', 'Sua classe')
     num_escolhas_total = classe_info.get('pericias_escolha_num', 0)
@@ -15,7 +19,7 @@ def _apresentar_escolha_pericias(config, chat_id, message_id, classe_key, player
     pericias_ja_proficientes = ficha_em_criacao.get('pericias_proficientes', [])
     opcoes_reais_para_escolha = [p for p in opcoes_pericias_classe if p not in pericias_ja_proficientes]
 
-    if num_escolhas_total == 0 or not opcoes_reais_para_escolha:
+    if num_escolhas_total <= 0 or not opcoes_reais_para_escolha:
         player_ref.update({'estado_criacao': 'AGUARDANDO_BACKGROUND'})
         equipamento = classe_info.get('equipamento_inicial', [])
         inventario_atual = ficha_em_criacao.get('inventario', [])
@@ -43,10 +47,24 @@ def _apresentar_escolha_pericias(config, chat_id, message_id, classe_key, player
         'ficha_em_criacao.pericias_escolhas_restantes': num_escolhas_total,
         'ficha_em_criacao.pericias_opcoes_atuais': opcoes_reais_para_escolha
     })
-    texto = f"Como *{nome_classe_exibido}*, você tem aptidão em diversas áreas. Escolha *{num_escolhas_total}* perícia(s) da lista abaixo.\n\nEscolha sua primeira perícia:"
-    botoes = [[{'text': p, 'callback_data': f'skill_choice:{p}'}] for p in opcoes_reais_para_escolha]
-    reply_markup = {'inline_keyboard': [botoes[i:i + 3] for i in range(0, len(botoes), 3)] if len(botoes) > 3 else botoes}
+    
+    # --- INÍCIO DA CORREÇÃO ---
+    texto = f"Como *{nome_classe_exibido}*, você tem aptidão em diversas áreas. Escolha *{num_escolhas_total}* perícia(s) da lista abaixo para se especializar.\n\nEscolha sua primeira perícia:"
+    
+    # Criar uma lista simples de botões, cada um em sua própria linha.
+    # Isso é mais seguro e evita erros de formatação com o Telegram.
+    botoes_simples = []
+    for pericia in opcoes_reais_para_escolha:
+        botoes_simples.append(
+            [{'text': pericia, 'callback_data': f'skill_choice:{pericia}'}]
+        )
+
+    reply_markup = {'inline_keyboard': botoes_simples}
+    
+    # A mensagem anterior (escolha de classe/habilidade) já foi editada para confirmar.
+    # Esta sempre será uma NOVA mensagem com os botões de perícia.
     telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto, reply_markup)
+    # --- FIM DA CORREÇÃO ---
 
 
 def _apresentar_escolhas_iniciais_classe(config, chat_id, message_id, classe_escolhida, player_ref, ficha_em_criacao):
@@ -107,9 +125,8 @@ def handle_criar_personagem_command(config, user_id, chat_id, player_ref):
     telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Vamos forjar seu destino... Por qual nome você é conhecido?")
 
 def handle_creation_message(config, user_id, chat_id, user_text, player_ref, player_data):
-    """Trata as mensagens de texto recebidas durante a criação do personagem."""
+    """Trata as mensagens de texto durante a criação do personagem."""
     estado_atual = player_data.get('estado_criacao')
-    ficha_em_criacao = player_data.get('ficha_em_criacao', {})
     
     if estado_atual == 'AGUARDANDO_NOME':
         player_ref.update({'estado_criacao': 'AGUARDANDO_RACA', 'ficha_em_criacao.nome': user_text})
@@ -118,13 +135,13 @@ def handle_creation_message(config, user_id, chat_id, user_text, player_ref, pla
             botoes_r = [[{'text': r_data['nome_exibido'], 'callback_data': f'race_choice:{r_key}'}] for r_key, r_data in config.RACAS_DATA.items()]
             botoes_r.sort(key=lambda r: r[0]['text'])
             telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_raca, {'inline_keyboard': botoes_r})
-        else: # Fallback
+        else:
             telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "AVISO: Raças não carregadas. Pulando para atributos.")
             player_ref.update({'estado_criacao': 'AGUARDANDO_DISTRIBUICAO_ATRIBUTOS'})
             primeiro_val = utils.ARRAY_PADRAO_ATRIBUTOS[0]
             txt_dist = "Vamos distribuir seus Atributos usando os valores: 15, 14, 13, 12, 10, 8.\n"
             txt_dist += f"Começando pelo valor mais alto, *{primeiro_val}*. Em qual atributo você deseja aplicá-lo?"
-            b_dist_buttons = [];
+            b_dist_buttons = []
             for attr_k_upper in utils.ATRIBUTOS_LISTA:
                 b_dist_buttons.append({'text': f'{utils.obter_nome_completo_atributo(attr_k_upper)} ({attr_k_upper})', 'callback_data': f'distribute_attr:{primeiro_val}:{attr_k_upper}'})
             reply_markup_dist_fallback = {'inline_keyboard': [b_dist_buttons[i:i + 2] for i in range(0, len(b_dist_buttons), 2)]}
@@ -141,13 +158,13 @@ def handle_creation_message(config, user_id, chat_id, user_text, player_ref, pla
     elif estado_atual == 'AGUARDANDO_FALHA':
         ficha_final_doc = player_ref.get()
         ficha_final = ficha_final_doc.to_dict().get('ficha_em_criacao', {})
-        ficha_final['falha'] = user_text; ficha_final.update({'nivel': 1, 'marcos': 0})
+        ficha_final['falha'] = user_text
+        ficha_final.update({'nivel': 1, 'marcos': 0})
         
         if 'ca_final' not in ficha_final:
             ficha_final['ca_final'] = utils.calcular_ca_final_com_equipamento(
                 ficha_final.get('ca_base', 10), ficha_final.get('inventario', []), ficha_final.get('modificadores', {}))
         
-        # Garantias finais para outros campos
         if 'bonus_proficiencia' not in ficha_final: ficha_final['bonus_proficiencia'] = 2
         if 'recursos' not in ficha_final: ficha_final['recursos'] = {} 
         if 'magias' not in ficha_final: ficha_final['magias'] = {'conhecidas': [], 'preparadas': [], 'slots_n1_atuais': 0, 'slots_n1_max':0}
@@ -156,7 +173,6 @@ def handle_creation_message(config, user_id, chat_id, user_text, player_ref, pla
         player_ref.update({'estado_criacao': firestore.DELETE_FIELD, 'ficha_em_criacao': firestore.DELETE_FIELD})
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Perfeito! Seu personagem está pronto!\n\nUse /start para iniciar sua jornada.")
 
-
 def handle_creation_callback(config, user_id, chat_id, message_id, callback_data, player_ref, player_data):
     """Trata os cliques em botões durante a criação do personagem."""
     ficha_em_criacao = player_data.get('ficha_em_criacao', {})
@@ -164,37 +180,33 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
     if callback_data.startswith('race_choice:'):
         raca_key = callback_data.split(':', 1)[1]
         if raca_key not in config.RACAS_DATA:
-            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Raça inválida. Tente novamente.")
-            return
+            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Raça inválida."); return
         
         raca_info = config.RACAS_DATA[raca_key]
-        ficha_em_criacao['raca'] = raca_key
-        ficha_em_criacao['nome_raca_exibido'] = raca_info['nome_exibido']
+        ficha_em_criacao['raca'] = raca_key; ficha_em_criacao['nome_raca_exibido'] = raca_info['nome_exibido']
         ficha_em_criacao['tracos_raciais'] = raca_info.get('tracos_raciais', [])
         ficha_em_criacao['deslocamento'] = raca_info.get('deslocamento', 9)
-        pericias_prof_atuais = ficha_em_criacao.get('pericias_proficientes', [])
-        if "Proficiência (Percepção)" in raca_info.get('tracos_raciais', []):
-            pericias_prof_atuais.append("Percepção")
-        ficha_em_criacao['pericias_proficientes'] = list(set(pericias_prof_atuais))
+        pericias_atuais = ficha_em_criacao.get('pericias_proficientes', [])
+        if "Proficiência (Percepção)" in raca_info.get('tracos_raciais', []): pericias_atuais.append("Percepção")
+        ficha_em_criacao['pericias_proficientes'] = list(set(pericias_atuais))
         player_ref.update({'ficha_em_criacao': ficha_em_criacao, 'estado_criacao': 'AGUARDANDO_DISTRIBUICAO_ATRIBUTOS'})
         
         telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você escolheu ser um(a) *{raca_info['nome_exibido']}*.")
         
         primeiro_valor = utils.ARRAY_PADRAO_ATRIBUTOS[0]
-        texto = f"Excelente escolha! Ser um(a) *{raca_info['nome_exibido']}* lhe confere certas aptidões.\n\nAgora, defina seus Atributos Fundamentais (15, 14, 13, 12, 10, 8).\n\nComeçando pelo valor mais alto, *{primeiro_valor}*. Onde deseja aplicá-lo?"
+        texto = f"Excelente escolha! Ser um(a) *{raca_info['nome_exibido']}* lhe confere certas aptidões.\n\nAgora, defina seus Atributos Fundamentais (15, 14, 13, 12, 10, 8).\n\nComeçando pelo valor mais alto, *{primeiro_valor}*. Em qual atributo você deseja aplicá-lo?"
         botoes = []
-        for attr_k_upper in utils.ATRIBUTOS_LISTA:
-            botoes.append({'text': f'{utils.obter_nome_completo_atributo(attr_k_upper)} ({attr_k_upper})', 'callback_data': f'distribute_attr:{primeiro_valor}:{attr_k_upper}'})
+        for attr_k in utils.ATRIBUTOS_LISTA: botoes.append({'text': f'{utils.obter_nome_completo_atributo(attr_k)} ({attr_k})', 'callback_data': f'distribute_attr:{primeiro_valor}:{attr_k}'})
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto, {'inline_keyboard': [botoes[i:i + 2] for i in range(0, len(botoes), 2)]})
 
     elif callback_data.startswith('distribute_attr:'):
-        _, v_str, attr_key = callback_data.split(':', 2); v_int = int(v_str)
+        _, v_str, attr_key_upper = callback_data.split(':', 2); v_int = int(v_str)
         a_base = ficha_em_criacao.get('atributos_base', {}); v_pend = ficha_em_criacao.get('valores_atributos_pendentes', list(utils.ARRAY_PADRAO_ATRIBUTOS))
         
-        if attr_key.lower() in a_base: telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"Atributo {utils.obter_nome_completo_atributo(attr_key.upper())} já definido."); return
+        if attr_key_upper.lower() in a_base: telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"Atributo {utils.obter_nome_completo_atributo(attr_key_upper)} já definido."); return
         if v_int not in v_pend: telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"Valor {v_int} não disponível."); return
         
-        a_base[attr_key.lower()] = v_int; v_pend.remove(v_int)
+        a_base[attr_key_upper.lower()] = v_int; v_pend.remove(v_int)
         player_ref.update({'ficha_em_criacao.atributos_base': a_base, 'ficha_em_criacao.valores_atributos_pendentes': v_pend})
         
         if not v_pend:
@@ -204,13 +216,26 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
                 for attr_k, bonus in ajustes.items(): a_finais[attr_k] = a_finais.get(attr_k, 0) + bonus
             mods = {attr: utils.calcular_modificador(val) for attr, val in a_finais.items()}
             player_ref.update({'estado_criacao': 'AGUARDANDO_CLASSE', 'ficha_em_criacao.atributos': a_finais, 'ficha_em_criacao.modificadores': mods})
-            telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você atribuiu {v_int} para {utils.obter_nome_completo_atributo(attr_key.upper())}.\nAtributos base definidos. Bônus raciais aplicados!")
-            texto_finais = "Perfeito! Seus Atributos Finais são:\n";
-            for attr_k_l, attr_v in a_finais.items(): mod = mods.get(attr_k_l,0); texto_finais += f"*{utils.obter_nome_completo_atributo(attr_k_l.upper())} ({attr_k_l.upper()})*: {attr_v} (Mod: {'+' if mod >=0 else ''}{mod})\n"
-            texto_finais += "\nAgora, escolha sua vocação, seu chamado para a aventura:"; c_bts = [[{'text': c_d['nome_exibido'], 'callback_data': f'class_choice:{c_k}'}] for c_k, c_d in config.CLASSES_DATA.items()]; c_bts.sort(key=lambda r: r[0]['text']); telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_finais, {'inline_keyboard': c_bts})
+            telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você atribuiu {v_int} para {utils.obter_nome_completo_atributo(attr_key_upper)}.\nAtributos base definidos. Bônus raciais aplicados!")
+            
+            # --- INÍCIO DA CORREÇÃO ---
+            texto_resumo_atributos = "Perfeito! Seus Atributos Finais são:\n"
+            resumo_linhas = []
+            for attr_k_l, attr_v in a_finais.items():
+                mod = mods.get(attr_k_l, 0)
+                sinal_mod = '+' if mod >= 0 else ''
+                resumo_linhas.append(f"{utils.obter_nome_completo_atributo(attr_k_l.upper())}: {attr_v} (Mod: {sinal_mod}{mod})")
+            
+            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_resumo_atributos + "\n".join(resumo_linhas))
+            
+            texto_escolha_classe = "\nAgora, escolha sua vocação, seu chamado para a aventura:"
+            botoes_classes = [[{'text': c_d['nome_exibido'], 'callback_data': f'class_choice:{c_k}'}] for c_k, c_d in config.CLASSES_DATA.items()]
+            botoes_classes.sort(key=lambda r: r[0]['text'])
+            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_escolha_classe, {'inline_keyboard': botoes_classes})
+            # --- FIM DA CORREÇÃO ---
         else:
             prox_v = v_pend[0]; attrs_d = [a_k for a_k in utils.ATRIBUTOS_LISTA if a_k.lower() not in a_base]
-            texto_n = f"Você atribuiu {v_int} para {utils.obter_nome_completo_atributo(attr_key.upper())}.\n\nPróximo valor a distribuir: *{prox_v}*. Em qual atributo restante você o aplicará?"
+            texto_n = f"Você atribuiu {v_int} para {utils.obter_nome_completo_atributo(attr_key_upper)}.\n\nPróximo valor a distribuir: *{prox_v}*. Em qual atributo restante você o aplicará?"
             b_prox = [];
             for a_d_k in attrs_d: b_prox.append({'text': f'{utils.obter_nome_completo_atributo(a_d_k)} ({a_d_k})', 'callback_data': f'distribute_attr:{prox_v}:{a_d_k}'})
             telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, texto_n, {'inline_keyboard': [b_prox[i:i + 2] for i in range(0, len(b_prox), 2)]})
@@ -235,7 +260,6 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
         for hab_p in habs_nv1:
             is_sub = "Domínio Divino:" in hab_p['nome'] or "Estilo de Luta" in hab_p['nome']
             if hab_p['nome'] != hab_final and not is_sub and hab_p['nome'] not in habs_atuais: habs_atuais.append(hab_p['nome'])
-        
         player_ref.update({'ficha_em_criacao.habilidades_aprendidas': list(set(habs_atuais)), 'estado_criacao': 'AGUARDANDO_ESCOLHA_PERICIAS'})
         f_para_pericias_doc = player_ref.get(); f_para_pericias = f_para_pericias_doc.to_dict().get('ficha_em_criacao',{})
         _apresentar_escolha_pericias(config, chat_id, message_id, classe_p, player_ref, f_para_pericias)

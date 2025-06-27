@@ -22,28 +22,22 @@ def log_error(message, exc_info=False):
     if exc_info: traceback.print_exc()
 
 # --- Classe de Configuração para passar dependências ---
+# No main.py, substitua a classe GameConfig antiga por esta
 class GameConfig:
-    """Agrupa todas as configurações e dados carregados para passar para os handlers."""
     def __init__(self):
-        log_info("Inicializando GameConfig...")
-        # Carregar dados do jogo
-        self.CLASSES_DATA, self.RACAS_DATA = data_loader.carregar_dados_jogo()
-        
-        # Configurar Tokens
-        self.TELEGRAM_TOKEN = "8185946655:AAGfyNTARWgaRU5ddoFG9hHR-7kPqMCjzo0" # Mantenha como está, conforme solicitado
-        self.GEMINI_API_KEY = "AIzaSyDIzFVMGmNp7yg8ovN8o0KHML5DT86b7ho" # Mantenha como está
+        dados_jogo = data_loader.carregar_dados_jogo()
+        self.CLASSES_DATA = dados_jogo.get('classes', {})
+        self.RACAS_DATA = dados_jogo.get('racas', {})
+        self.BASE_ITEMS_DATA = dados_jogo.get('base_items', {})
+        self.AFFIXES_DATA = dados_jogo.get('affixes', {})
+        self.LOOT_TABLES_DATA = dados_jogo.get('loot_tables', {})
 
-        # Configurar Gemini
+        self.TELEGRAM_TOKEN = "8185946655:AAGfyNTARWgaRU5ddoFG9hHR-7kPqMCjzo0"
+        self.GEMINI_API_KEY = "AIzaSyDIzFVMGmNp7yg8ovN8o0KHML5DT86b7ho"
+
         genai.configure(api_key=self.GEMINI_API_KEY)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        # Carregar Prompts
-        self.PROMPTS = {
-            "arbitro": prompts.PROMPT_ARBITRO,
-            "mestre_narrador": prompts.PROMPT_MESTRE_NARRADOR,
-            "narrador_simples": prompts.PROMPT_NARRADOR_SIMPLES
-        }
-        log_info("GameConfig inicializado com sucesso.")
+        self.PROMPTS = prompts # Assumindo que prompts.py tem as variáveis
 
 # --- INICIALIZAÇÃO GLOBAL ---
 log_info("Iniciando inicialização global do main.py...")
@@ -76,7 +70,7 @@ def rpg_bot_webhook(request):
             chat_id = data['message']['chat']['id']
             message_id = data['message']['message_id']
             callback_data = data['data']
-            user_text = None # Não há texto de mensagem em um callback
+            user_text = None
             telegram_actions.answer_callback_query(config.TELEGRAM_TOKEN, data['id'])
         elif 'message' in update and 'text' in update['message']:
             is_callback = False
@@ -84,7 +78,7 @@ def rpg_bot_webhook(request):
             user_id = str(message['from']['id'])
             chat_id = message['chat']['id']
             user_text = message['text']
-            message_id = None # Não há um message_id para editar diretamente
+            message_id = None
             callback_data = None
         else:
             log_info("Update sem conteúdo relevante (callback ou mensagem de texto). Ignorando.")
@@ -97,7 +91,7 @@ def rpg_bot_webhook(request):
         player_data = player_doc.to_dict() if player_doc.exists else {}
         estado_atual = player_data.get('estado_criacao')
 
-        # Comandos de sistema que podem ser executados em qualquer estado
+        # Comandos de sistema que podem ser executados em qualquer estado, tratados pelos handlers
         if not is_callback:
             if user_text.lower() == '/start':
                  adventure_handler.handle_start_command(config, user_id, chat_id, player_doc)
