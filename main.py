@@ -114,7 +114,7 @@ def rpg_bot_webhook(request):
     except Exception as e:
         logging.error(f"Erro INESPERADO no roteador principal para user_id {user_id}: {e}", exc_info=True)
         if chat_id:
-            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"Ocorreu um erro catastrófico nos planos astrais\\. Os Deuses Antigos foram alertados\\.")
+            telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Ocorreu um erro catastrófico nos planos astrais. Os Deuses Antigos foram alertados.")
     
     return "OK", 200
 
@@ -123,7 +123,7 @@ def rpg_bot_webhook(request):
 # ==============================================================================
 @functions_framework.http
 def get_char_sheet(request):
-    headers = {'Access-Control-Allow-Origin': '*','Access-Control-Allow-Methods': 'POST, OPTIONS','Access-Control-Allow-Headers': 'Content-Type'}
+    headers = {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type'}
     if request.method == 'OPTIONS': return ('', 204, headers)
     
     request_json = request.get_json(silent=True)
@@ -137,6 +137,7 @@ def get_char_sheet(request):
         if not hash_recebido: raise ValueError("Hash de validação não encontrado.")
         
         chaves_ordenadas = sorted(parsed_data.keys())
+        # Removido o comentário problemático que causou o SyntaxError
         data_check_string = "\n".join(f"{key}={parsed_data[key]}" for key in chaves_ordenadas)
         secret_key = hmac.new("WebAppData".encode('utf-8'), config.TELEGRAM_TOKEN.encode('utf-8'), hashlib.sha256).digest()
         hash_calculado = hmac.new(secret_key, data_check_string.encode('utf-8'), hashlib.sha256).hexdigest()
