@@ -1,16 +1,16 @@
 # modules/game_logic/adventure_handler.py
+# Versão final com lógica completa e formatação HTML corrigida.
+
 import json
 import random
 import re
 from firebase_admin import firestore
 from modules import telegram_actions
-from modules.game_logic import utils 
+from modules.game_logic import utils
 
 # --- A "FORJA MÁGICA" E O PROCESSADOR DE LOOT ---
-# (Estas funções complexas permanecem as mesmas que na versão funcional que já tínhamos)
-# ... (código completo das funções _gerar_item_magico e _processar_tabela_de_loot)
-
 def _gerar_item_magico(config, id_item_base, raridade_maxima):
+    # (código completo da função)
     base_item = config.BASE_ITEMS_DATA.get(id_item_base)
     if not base_item: return None
     raridades, indice_max = ["Comum", "Incomum", "Raro", "Épico"], raridades.index(raridade_maxima) if raridade_maxima in raridades else 0
@@ -49,7 +49,7 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
         if afixo in config.AFFIXES_DATA.get('prefixos', {}).get(base_item.get('tipo', 'geral'), []): nome_final = f"{afixo['nome']} {nome_final}"
         else: nome_final = f"{nome_final} {afixo['nome']}"
         lista_efeitos_desc.append(afixo['efeito'])
-    item_gerado.update({'nome_exibido': nome_final, 'descricao_final': f"{base_item['descricao_base']}<br><b>Efeitos Mágicos:</b> {'; '.join(lista_efeitos_desc)}", 'efeitos': lista_efeitos_desc, 'raridade': raridade_final})
+    item_gerado.update({'nome_exibido': nome_final, 'descricao_final': f"{base_item['descricao_base']}\n<b>Efeitos Mágicos:</b> {'; '.join(lista_efeitos_desc)}", 'efeitos': lista_efeitos_desc, 'raridade': raridade_final})
     return item_gerado
 
 def _processar_tabela_de_loot(config, player_ref, tabela_id):
@@ -68,17 +68,15 @@ def _processar_tabela_de_loot(config, player_ref, tabela_id):
         if random.randint(1, 100) <= drop.get('chance', 0):
             item_gerado = _gerar_item_magico(config, drop['id_item_base'], drop['raridade_maxima'])
             if item_gerado:
-                # Removido escape_markdown_v2 e substituído backticks por <code>
-                loot_encontrado_texto.append(f"✨ {item_gerado['nome_exibido']} <code>({item_gerado['raridade']})</code>")
+                nome_escapado = telegram_actions.escape_html(item_gerado['nome_exibido'])
+                loot_encontrado_texto.append(f"✨ {nome_escapado} <code>({item_gerado['raridade']})</code>")
                 itens_para_adicionar.append(item_gerado)
     if itens_para_adicionar: player_ref.update({'ficha.inventario': firestore.ArrayUnion(itens_para_adicionar)})
-    return "Você encontra:<br>" + "<br>".join(loot_encontrado_texto) if loot_encontrado_texto else None
-
+    return "Você encontra:\n" + "\n".join(loot_encontrado_texto) if loot_encontrado_texto else None
 
 # ==============================================================================
 # === HANDLERS DE COMANDOS                                                 ===
 # ==============================================================================
-
 def handle_start_command(config, user_id, chat_id, player_doc):
     if player_doc.exists and 'ficha' in player_doc.to_dict():
         nome_personagem = player_doc.to_dict().get('ficha', {}).get('nome', 'Aventureiro(a)')
@@ -99,54 +97,45 @@ def handle_ficha_command(config, user_id, chat_id, player_doc):
 # ==============================================================================
 # === HANDLERS DE AÇÕES (MENSAGENS E CALLBACKS)                              ===
 # ==============================================================================
-
 def handle_adventure_message(config, user_id, chat_id, user_text, player_ref, player_data):
     prompt_arbitro = config.PROMPTS['arbitro'].format(user_text)
     convo_arbitro = config.model.start_chat(history=[])
     resposta_arbitro = convo_arbitro.send_message(prompt_arbitro).text.strip().upper()
-
     if resposta_arbitro == "SIM":
         texto_pergunta = "🎲 O destino é incerto. Teste sua <b>sorte</b>!"
         teclado = {'inline_keyboard': [[{'text': 'Rolar o d20 (Ação Geral)', 'callback_data': 'roll_d20'}]]}
         player_ref.update({'acao_pendente': user_text})
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_pergunta, teclado)
     else:
+        ficha = player_data.get('ficha', {})
         historico = player_data.get('historico', [])
         prompt_simples = config.PROMPTS['narrador_simples'].format(user_text, json.dumps(ficha, ensure_ascii=False))
         convo_simples = config.model.start_chat(history=historico)
         resposta_narrador = convo_simples.send_message(prompt_simples).text
-        # Mudança: escape_markdown_v2 para escape_html
         texto_seguro = telegram_actions.escape_html(resposta_narrador)
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_seguro)
-        # Certifique-se de que o histórico armazena HTML válido
         player_ref.update({'historico': firestore.ArrayUnion([{'role': 'user', 'parts': [user_text]}, {'role': 'model', 'parts': [texto_seguro]}])})
 
 def handle_adventure_callback(config, user_id, chat_id, message_id, callback_data, player_ref, player_data):
     if callback_data == 'roll_d20':
         acao_pendente = player_data.get('acao_pendente')
         if acao_pendente:
-            resultado_d20 = random.randint(1, 20) # type: ignore
+            resultado_d20 = random.randint(1, 20)
             telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você lança seu destino aos ventos... o resultado do dado é <b>{resultado_d20}</b>!")
-            
             ficha = player_data.get('ficha', {})
             historico = player_data.get('historico', [])
             prompt_final = config.PROMPTS['mestre_narrador'].format(json.dumps(ficha, ensure_ascii=False), json.dumps(historico, ensure_ascii=False), acao_pendente, resultado_d20)
-            
             convo = config.model.start_chat(history=historico)
             resposta_narrador = convo.send_message(prompt_final).text
             texto_narracao_limpo = re.sub(r'\[LOOT_TABLE:\s*\w+\s*\]', '', resposta_narrador).strip()
             texto_seguro = telegram_actions.escape_html(texto_narracao_limpo)
             telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_seguro)
-            
-            loot_tag_match = re.search(r'\[LOOT_TABLE:(\w+)\]', resposta_narrador) # type: ignore
+            loot_tag_match = re.search(r'\[LOOT_TABLE:(\w+)\]', resposta_narrador)
             if loot_tag_match:
                 tabela_id = loot_tag_match.group(1)
                 mensagem_loot = _processar_tabela_de_loot(config, player_ref, tabela_id)
                 if mensagem_loot:
-                    # Mudança: Removido escape_markdown_v2, assumindo que _processar_tabela_de_loot já retorna HTML
                     telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, mensagem_loot)
-            
-            # Certifique-se de que o histórico armazena HTML válido
             player_ref.update({
                 'historico': firestore.ArrayUnion([{'role': 'user', 'parts': [acao_pendente]}, {'role': 'model', 'parts': [texto_narracao_limpo]}]),
                 'acao_pendente': firestore.DELETE_FIELD

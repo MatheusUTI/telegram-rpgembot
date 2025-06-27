@@ -13,15 +13,25 @@ def escape_html(text: str) -> str:
     Escapa os caracteres especiais para o modo de parse HTML do Telegram.
     Conforme a documentação oficial, apenas <, > e & precisam ser escapados.
     """
-    if not isinstance(text, str): # Adicionado para lidar com entradas não-string
+    if not isinstance(text, str):  # Adicionado para lidar com entradas não-string
         return ""
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+def sanitize_user_input(text: str) -> str:
+    """
+    Sanitiza entradas de usuário para uso em mensagens HTML do Telegram.
+    Remove tags HTML e aplica escape seguro.
+    """
+    if not isinstance(text, str):
+        return ""
+    import re
+    text_sem_tags = re.sub(r'<[^>]*>', '', text)
+    return escape_html(text_sem_tags)
 
 def send_telegram_message(token, chat_id, text, keyboard=None):
     """Envia uma mensagem de texto para um chat do Telegram, usando o modo HTML."""
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     
-    # MUDANÇA PRINCIPAL: parse_mode agora é "HTML" e o texto já deve vir escapado
     payload = {"chat_id": str(chat_id), "text": text, "parse_mode": "HTML"}
     
     if keyboard:
@@ -41,7 +51,6 @@ def edit_telegram_message(token, chat_id, message_id, text, keyboard=None):
     """Edita uma mensagem de texto existente no Telegram, usando o modo HTML."""
     url = f"https://api.telegram.org/bot{token}/editMessageText"
     
-    # MUDANÇA PRINCIPAL: parse_mode agora é "HTML" e o texto já deve vir escapado
     payload = {"chat_id": str(chat_id), "message_id": message_id, "text": text, "parse_mode": "HTML"}
 
     if keyboard:
