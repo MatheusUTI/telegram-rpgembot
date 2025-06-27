@@ -1,4 +1,9 @@
 {
     "IDX.aI.enableInlineCompletion": true,
-    "IDX.aI.enableCodebaseIndexing": true
+    "IDX.aI.enableCodebaseIndexing": true,
+    "editor.inlineSuggest.suppressSuggestions": true,
+    "emmet.useInlineCompletions": true,
+    "diffEditor.experimental.useTrueInlineView": true,
+    "debug.console.acceptSuggestionOnEnter": "on",
+    "terminal.integrated.suggest.runOnEnter": "always"
 }

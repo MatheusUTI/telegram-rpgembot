@@ -82,22 +82,18 @@ def _processar_tabela_de_loot(config, player_ref, tabela_id):
 def handle_start_command(config, user_id, chat_id, player_doc):
     if player_doc.exists and 'ficha' in player_doc.to_dict():
         nome_personagem = player_doc.to_dict().get('ficha', {}).get('nome', 'Aventureiro(a)')
-        # Mudança: escape_markdown_v2 para escape_html e formatação HTML
         nome_escapado = telegram_actions.escape_html(nome_personagem)
         texto = f"⚔️ Bem-vindo(a) de volta, <b>{nome_escapado}</b>! Sua aventura nas Terras de Aethel continua."
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto)
     else:
-        # REMOVIDAS AS BARRAS DUPLAS DE ESCAPE E O UNDERSCORE ESCAPADO
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Sua lenda ainda não foi escrita. Use /criar_personagem para forjar seu destino.")
 
 def handle_ficha_command(config, user_id, chat_id, player_doc):
     hosting_url = "https://meu-rpg-duna.web.app"
     if player_doc.exists and 'ficha' in player_doc.to_dict():
         teclado = {'inline_keyboard': [[{'text': '📜 Abrir Ficha de Personagem', 'web_app': {'url': hosting_url}}]]}
-        # REMOVIDAS AS BARRAS DUPLAS DE ESCAPE
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Aqui está sua ficha de aventureiro. Clique no botão abaixo para abri-la.", teclado)
     else:
-        # REMOVIDAS AS BARRAS DUPLAS DE ESCAPE
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Você precisa criar um personagem primeiro! Use o comando /criar_personagem.")
 
 # ==============================================================================
@@ -110,13 +106,11 @@ def handle_adventure_message(config, user_id, chat_id, user_text, player_ref, pl
     resposta_arbitro = convo_arbitro.send_message(prompt_arbitro).text.strip().upper()
 
     if resposta_arbitro == "SIM":
-        # REMOVIDAS AS BARRAS DUPLAS DE ESCAPE
         texto_pergunta = "🎲 O destino é incerto. Teste sua <b>sorte</b>!"
         teclado = {'inline_keyboard': [[{'text': 'Rolar o d20 (Ação Geral)', 'callback_data': 'roll_d20'}]]}
         player_ref.update({'acao_pendente': user_text})
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_pergunta, teclado)
     else:
-        ficha = player_data.get('ficha', {})
         historico = player_data.get('historico', [])
         prompt_simples = config.PROMPTS['narrador_simples'].format(user_text, json.dumps(ficha, ensure_ascii=False))
         convo_simples = config.model.start_chat(history=historico)
@@ -131,8 +125,7 @@ def handle_adventure_callback(config, user_id, chat_id, message_id, callback_dat
     if callback_data == 'roll_d20':
         acao_pendente = player_data.get('acao_pendente')
         if acao_pendente:
-            resultado_d20 = random.randint(1, 20)
-            # REMOVIDAS AS BARRAS DUPLAS DE ESCAPE
+            resultado_d20 = random.randint(1, 20) # type: ignore
             telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você lança seu destino aos ventos... o resultado do dado é <b>{resultado_d20}</b>!")
             
             ficha = player_data.get('ficha', {})
@@ -141,13 +134,11 @@ def handle_adventure_callback(config, user_id, chat_id, message_id, callback_dat
             
             convo = config.model.start_chat(history=historico)
             resposta_narrador = convo.send_message(prompt_final).text
-            
             texto_narracao_limpo = re.sub(r'\[LOOT_TABLE:\s*\w+\s*\]', '', resposta_narrador).strip()
-            # Mudança: escape_markdown_v2 para escape_html
             texto_seguro = telegram_actions.escape_html(texto_narracao_limpo)
             telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto_seguro)
             
-            loot_tag_match = re.search(r'\[LOOT_TABLE:(\w+)\]', resposta_narrador)
+            loot_tag_match = re.search(r'\[LOOT_TABLE:(\w+)\]', resposta_narrador) # type: ignore
             if loot_tag_match:
                 tabela_id = loot_tag_match.group(1)
                 mensagem_loot = _processar_tabela_de_loot(config, player_ref, tabela_id)

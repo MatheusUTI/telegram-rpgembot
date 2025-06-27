@@ -1,6 +1,7 @@
 # modules/game_logic/character_creator.py
 # Versão final com lógica completa e formatação HTML.
 
+import re
 from firebase_admin import firestore
 from modules import telegram_actions
 from modules.game_logic import utils 
@@ -10,6 +11,10 @@ from modules.game_logic import utils
 # ==============================================================================
 
 def _finalizar_criacao(config, chat_id, player_ref):
+    """Sanitiza uma string para uso em HTML, removendo tags e escapando caracteres especiais."""
+    def sanitize_html(text):
+        return telegram_actions.escape_html(re.sub(r'<[^>]*>', '', text))
+
     """Finaliza o processo de criação, monta a ficha e limpa os estados temporários."""
     ficha_doc = player_ref.get()
     if not ficha_doc.exists: return
@@ -32,7 +37,7 @@ def _finalizar_criacao(config, chat_id, player_ref):
     player_ref.update({'estado_criacao': firestore.DELETE_FIELD, 'ficha_em_criacao': firestore.DELETE_FIELD})
     
     nome = ficha_em_criacao.get('nome', 'Aventureiro')
-    telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"✅ Perfeito! O seu personagem, <b>{nome}</b>, está pronto para a aventura.<br><br>Use /start para iniciar a sua jornada e descobrir o seu destino nas Terras de Aethel.")
+    telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"✅ Perfeito! O seu personagem, <b>{sanitize_html(nome)}</b>, está pronto para a aventura.<br><br>Use /start para iniciar a sua jornada e descobrir o seu destino nas Terras de Aethel.")
 
 def _apresentar_escolha_pericias(config, chat_id, message_id, classe_key, player_ref, ficha_em_criacao):
     """Apresenta as opções de perícias para o jogador."""
@@ -95,18 +100,21 @@ def handle_creation_message(config, user_id, chat_id, user_text, player_ref, pla
     estado_atual = player_data.get('estado_criacao')
     
     if estado_atual == 'AGUARDANDO_NOME':
-        nome_escapado = user_text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') # Escape for HTML
+        # Sanitize user_text for HTML display
+        nome_escapado = telegram_actions.escape_html(user_text)
         player_ref.update({'estado_criacao': 'AGUARDANDO_RACA', 'ficha_em_criacao.nome': user_text}) # type: ignore
         texto = f"<b>{nome_escapado}</b>... um nome que ecoará pelas Terras de Aethel.<br><br> Cada povo tem as suas lendas e talentos. Qual é a sua origem?"
         botoes_races = [[{'text': r_data['nome_exibido'], 'callback_data': f'race_choice:{r_key}'}] for r_key, r_data in sorted(config.RACAS_DATA.items())]
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto, {'inline_keyboard': botoes_races})
 
     elif estado_atual == 'AGUARDANDO_BACKGROUND':
-        player_ref.update({'estado_criacao': 'AGUARDANDO_MOTIVACAO', 'ficha_em_criacao.background': user_text}) # type: ignore
+        # Sanitize user_text for HTML display
+        player_ref.update({'estado_criacao': 'AGUARDANDO_MOTIVACAO', 'ficha_em_criacao.background': telegram_actions.escape_html(user_text)}) # type: ignore
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Todo o herói tem uma história para contar. E toda a jornada tem um começo. O que te jogou na estrada em busca de aventura?")
     
     elif estado_atual == 'AGUARDANDO_MOTIVACAO':
-        player_ref.update({'estado_criacao': 'AGUARDANDO_FALHA', 'ficha_em_criacao.motivacao': user_text}) # type: ignore
+        # Sanitize user_text for HTML display
+        player_ref.update({'estado_criacao': 'AGUARDANDO_FALHA', 'ficha_em_criacao.motivacao': telegram_actions.escape_html(user_text)}) # type: ignore
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Interessante motivação. Mas até os maiores heróis têm uma fraqueza que os assombra, uma falha que molda o seu caráter. Qual é a sua?")
         
     elif estado_atual == 'AGUARDANDO_FALHA':
@@ -124,7 +132,7 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
         if 'ajustes_atributo' in raca_info: ficha_em_criacao['ajustes_raciais'] = raca_info['ajustes_atributo']
         if 'pericias_fixas' in raca_info: ficha_em_criacao['pericias_proficientes'] = raca_info['pericias_fixas']
         
-        player_ref.update({'ficha_em_criacao': ficha_em_criacao, 'estado_criacao': 'AGUARDANDO_DISTRIBUICAO_ATRIBUTOS'})
+        player_ref.update({'ficha_em_criacao': ficha_em_criacao, 'estado_criacao': 'AGUARDANDO_DISTRIBUICAO_ATRIBUTOS', 'ficha_em_criacao.valores_atributos_pendentes': list(utils.ARRAY_PADRAO_ATRIBUTOS)})
         
         nome_raca_escapado = raca_info.get('nome_exibido', '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') # Escape for HTML
         telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você escolheu ser um(a) <b>{nome_raca_escapado}</b>.")
@@ -171,7 +179,7 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
         else:
             prox_valor = valores_pendentes[0]
             attrs_disponiveis = [key for key in utils.ATRIBUTOS_LISTA if key.lower() not in atributos_base]
-            nome_attr_escapado = utils.obter_nome_completo_atributo(attr_key_upper).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') # Escape for HTML
+            nome_attr_escapado = telegram_actions.escape_html(utils.obter_nome_completo_atributo(attr_key_upper))
             texto_proximo = f"Você atribuiu <b>{v_str}</b> para <b>{nome_attr_escapado}</b>.<br><br>Próximo valor a distribuir: <b>{prox_valor}</b>. Onde o aplicará?"
             botoes_prox = [[{'text': f'{utils.obter_nome_completo_atributo(attr_k)} ({attr_k})', 'callback_data': f'distribute_attr:{prox_valor}:{attr_k}'}] for attr_k in attrs_disponiveis]
             telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, texto_proximo, {'inline_keyboard': [botoes_prox[i:i + 2] for i in range(0, len(botoes_prox), 2)]})
@@ -193,7 +201,7 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
         })
         
         classe_key = ficha_em_criacao.get('classe') # type: ignore
-        hab_escapada = habilidade_escolhida.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') # Escape for HTML
+        hab_escapada = telegram_actions.escape_html(habilidade_escolhida)
         texto_confirmacao = f"✨ Habilidade <b>{hab_escapada}</b> selecionada!"
         telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, texto_confirmacao)
         _apresentar_escolha_pericias(config, chat_id, None, classe_key, player_ref, ficha_em_criacao)
@@ -215,7 +223,7 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
             'ficha_em_criacao.pericias_opcoes_atuais': opcoes_atuais
         })
         
-        pericia_escapada = pericia_escolhida.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') # Escape for HTML
+        pericia_escapada = telegram_actions.escape_html(pericia_escolhida)
         if escolhas_restantes <= 0:
             telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Perícia <b>{pericia_escapada}</b> adicionada. Todas as perícias de classe foram escolhidas.")
             player_ref.update({'estado_criacao': 'AGUARDANDO_BACKGROUND'})

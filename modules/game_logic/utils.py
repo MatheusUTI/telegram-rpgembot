@@ -34,7 +34,7 @@ def calcular_ca_final_com_equipamento(ca_base_personagem, inventario, modificado
             item_ca_base = item.get('ca_base', 0)
 
             if tipo_item == "armadura_pesada_ref" and item_ca_base > 0:
-                armadura_principal_ca_valor = max(armadura_principal_ca_valor, item_ca_base)
+                armadura_principal_ca_valor = max(armadura_principal_ca_valor, item_ca_base) # type: ignore
                 ca_final = armadura_principal_ca_valor
             elif tipo_item == "armadura_media_ref" and item_ca_base > 0:
                 bonus_des = min(modificadores.get('des', 0), 2)
