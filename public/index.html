@@ -1,44 +1,130 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ficha de Personagem - As Terras de Aethel</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2.0">
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-    <div class="ficha-container">
-        <header>
-            <h1>Ficha de Aventureiro</h1>
+    <div id="loader">Carregando os tomos antigos...</div>
+
+    <div class="ficha-container" id="ficha-container" style="display: none;">
+        
+        <header class="char-header">
+            <div class="char-name-plate">
+                <span id="char-name">Nome do Personagem</span>
+            </div>
+            <div class="char-subheader">
+                <span id="char-race">Raça</span> 
+                <span id="char-class">Classe</span>, 
+                Nível <span id="char-level">1</span>
+            </div>
         </header>
 
-        <section class="info-principal">
-            <h2>Nome: <span id="char-nome">Carregando...</span></h2>
-            <p><strong>Classe:</strong> <span id="char-classe"></span> | <strong>Nível:</strong> <span id="char-nivel"></span></p>
-        </section>
+        <main class="main-stats-grid">
 
-        <section class="background">
-            <h3>História</h3>
-            <p id="char-background"></p>
-        </section>
+            <div class="column">
+                <section class="attributes">
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-for">10</span>
+                        <span class="attribute-modifier" id="mod-for">+0</span>
+                        <label>Força</label>
+                    </div>
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-des">10</span>
+                        <span class="attribute-modifier" id="mod-des">+0</span>
+                        <label>Destreza</label>
+                    </div>
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-con">10</span>
+                        <span class="attribute-modifier" id="mod-con">+0</span>
+                        <label>Constituição</label>
+                    </div>
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-int">10</span>
+                        <span class="attribute-modifier" id="mod-int">+0</span>
+                        <label>Inteligência</label>
+                    </div>
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-sab">10</span>
+                        <span class="attribute-modifier" id="mod-sab">+0</span>
+                        <label>Sabedoria</label>
+                    </div>
+                    <div class="attribute-box">
+                        <span class="attribute-value" id="attr-car">10</span>
+                        <span class="attribute-modifier" id="mod-car">+0</span>
+                        <label>Carisma</label>
+                    </div>
+                </section>
 
-        <section class="detalhes">
-            <div><strong>Motivação:</strong> <span id="char-motivacao"></span></div>
-            <div><strong>Fraqueza:</strong> <span id="char-falha"></span></div>
-            <div><strong>Ofício:</strong> <span id="char-oficio"></span></div>
-        </section>
+                <section class="proficiencies-box">
+                    <h3>Testes de Resistência</h3>
+                    <ul id="saving-throws-list" class="skills-list"></ul>
+                    <h3>Perícias</h3>
+                    <ul id="skills-list" class="skills-list"></ul>
+                </section>
+            </div>
 
-        <section class="habilidades">
-            <h3>Habilidades Aprendidas</h3>
-            <ul id="char-habilidades">
-                </ul>
+            <div class="column">
+                <section class="combat-stats">
+                    <div class="stat-circle" title="Classe de Armadura">
+                        <label>CA</label>
+                        <span id="stat-ac">10</span>
+                    </div>
+                    <div class="stat-circle" title="Iniciativa">
+                        <label>Iniciativa</label>
+                        <span id="stat-initiative">+0</span>
+                    </div>
+                    <div class="stat-circle" title="Deslocamento">
+                        <label>Velocidade</label>
+                        <span id="stat-speed">9m</span>
+                    </div>
+                </section>
+
+                <section class="hit-points-box">
+                    <h3>Pontos de Vida</h3>
+                    <div class="hp-bar">
+                        <div id="hp-current-bar"></div>
+                    </div>
+                    <div class="hp-text">
+                        <span id="hp-current">10</span> / <span id="hp-max">10</span>
+                    </div>
+                </section>
+                
+                <section class="features-traits-box">
+                    <h3>Habilidades & Traços</h3>
+                    <ul id="features-list"></ul>
+                </section>
+            </div>
+
+        </main>
+
+        <section class="equipment-section">
+            <h3>Mochila & Equipamento</h3>
+            <div class="currency-display">
+                <div title="Dracmas de Aço">🪙 <span id="currency-da">0</span></div>
+                <div title="Cravos de Prata">🪙 <span id="currency-cp">0</span></div>
+                <div title="Fragmentos de Ferro">🪙 <span id="currency-ff">0</span></div>
+            </div>
+            <div id="inventory-list"></div>
+        </section>
+        
+        <section class="personality-section">
+             <h3>Personalidade</h3>
+             <p><strong>Background:</strong> <span id="char-background"></span></p>
+             <p><strong>Motivação:</strong> <span id="char-motivacao"></span></p>
+             <p><strong>Falha:</strong> <span id="char-falha"></span></p>
         </section>
 
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 </html>

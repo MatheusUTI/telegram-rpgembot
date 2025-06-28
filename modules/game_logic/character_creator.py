@@ -1,31 +1,84 @@
 # modules/game_logic/character_creator.py
-# Versão final com a correção na montagem dos botões.
+# Versão com correção no cálculo de pontos de vida.
 
 from firebase_admin import firestore
 from modules import telegram_actions
 from modules.game_logic import utils 
 
 def _finalizar_criacao(config, chat_id, player_ref):
-    """Finaliza o processo, monta a ficha e limpa os estados temporários."""
+    """
+    Finaliza o processo, calculando todos os atributos derivados e 
+    construindo o objeto 'ficha' completo antes de salvar no Firestore.
+    """
     ficha_doc = player_ref.get()
     if not ficha_doc.exists: return
 
     player_data = ficha_doc.to_dict()
     ficha_em_criacao = player_data.get('ficha_em_criacao', {})
     
-    ficha_em_criacao.setdefault('nivel', 1)
-    ficha_em_criacao.setdefault('marcos', 0)
+    # --- Início da Construção da Ficha Final ---
     
-    if 'ca_final' not in ficha_em_criacao:
-        ficha_em_criacao['ca_final'] = utils.calcular_ca_final_com_equipamento(
-            ficha_em_criacao.get('ca_base', 10), ficha_em_criacao.get('inventario', []), ficha_em_criacao.get('modificadores', {})
-        )
+    raca_key = ficha_em_criacao.get('raca', 'humano')
+    classe_key = ficha_em_criacao.get('classe', 'guerreiro')
+    raca_info = config.RACAS_DATA.get(raca_key, {})
+    classe_info = config.CLASSES_DATA.get(classe_key, {})
     
-    player_ref.set({'ficha': ficha_em_criacao, 'historico': []}, merge=True)
+    nivel = ficha_em_criacao.get('nivel', 1)
+    bonus_proficiencia = utils.calcular_bonus_proficiencia(nivel)
+    
+    # --- ALTERAÇÃO ARQUITETURAL: Correção do Cálculo de Vida ---
+    mod_con = ficha_em_criacao.get('modificadores', {}).get('con', 0)
+    dado_vida_str = classe_info.get('dado_vida', 'd6') # Ex: "d10"
+
+    try:
+        # Extrai o valor numérico do dado de vida (remove o 'd' e converte para int)
+        valor_max_dado_vida = int(dado_vida_str.replace('d', ''))
+    except (ValueError, IndexError):
+        valor_max_dado_vida = 6 # Um valor padrão seguro em caso de erro no JSON.
+
+    # Agora a soma é feita entre dois números inteiros.
+    vida_maxima = valor_max_dado_vida + mod_con
+    # --- FIM DA ALTERAÇÃO ---
+    
+    ficha_final = {
+        'nome': ficha_em_criacao.get('nome', 'Aventureiro'),
+        'raca': raca_key,
+        'classe': classe_key,
+        'nivel': nivel,
+        'marcos': 0,
+        'background': ficha_em_criacao.get('background', ''),
+        'motivacao': ficha_em_criacao.get('motivacao', ''),
+        'falha': ficha_em_criacao.get('falha', ''),
+        'atributos': ficha_em_criacao.get('atributos', {}),
+        'modificadores': ficha_em_criacao.get('modificadores', {}),
+        'proficiencia_bonus': bonus_proficiencia,
+        'pontos_vida': { 'atuais': vida_maxima, 'maximos': vida_maxima, 'temporarios': 0 },
+        'ca_final': utils.calcular_ca_final_com_equipamento(
+            10 + ficha_em_criacao.get('modificadores', {}).get('des', 0),
+            ficha_em_criacao.get('inventario', []),
+            ficha_em_criacao.get('modificadores', {})
+        ),
+        'iniciativa': ficha_em_criacao.get('modificadores', {}).get('des', 0),
+        'deslocamento': raca_info.get('deslocamento', '9m'),
+        'dados_vida': { 'total': f"1{dado_vida_str}", 'restantes': f"1{dado_vida_str}" },
+        'testes_resistencia_proficientes': classe_info.get('testes_resistencia_proficientes', []),
+        'pericias_proficientes': ficha_em_criacao.get('pericias_proficientes', []),
+        'inventario': ficha_em_criacao.get('inventario', []),
+        'currency': ficha_em_criacao.get('currency', {}),
+        'habilidades_aprendidas': ficha_em_criacao.get('habilidades_aprendidas', []) + raca_info.get('habilidades_fixas', []),
+        'proficiencias_armas': list(set(raca_info.get('proficiencias_armas', []) + classe_info.get('proficiencias_armas', []))),
+        'proficiencias_armaduras': list(set(raca_info.get('proficiencias_armaduras', []) + classe_info.get('proficiencias_armaduras', []))),
+        'proficiencias_ferramentas': list(set(raca_info.get('proficiencias_ferramentas', []) + classe_info.get('proficiencias_ferramentas', []))),
+        'proficiencias_idiomas': list(set(raca_info.get('idiomas', []) + classe_info.get('idiomas_adicionais', [])))
+    }
+    
+    player_ref.set({'ficha': ficha_final, 'historico': []}, merge=True)
     player_ref.update({'estado_criacao': firestore.DELETE_FIELD, 'ficha_em_criacao': firestore.DELETE_FIELD})
     
-    nome = telegram_actions.escape_html(ficha_em_criacao.get('nome', 'Aventureiro'))
+    nome = telegram_actions.escape_html(ficha_final.get('nome', 'Aventureiro'))
     telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, f"✅ Perfeito! O seu personagem, <b>{nome}</b>, está pronto para a aventura.\n\nUse /start para iniciar a sua jornada.")
+
+# O restante do ficheiro permanece inalterado, pois a lógica de fluxo está correta.
 
 def _apresentar_escolha_pericias(config, chat_id, message_id, classe_key, player_ref, ficha_em_criacao):
     """Apresenta as opções de perícias para o jogador."""
@@ -65,12 +118,17 @@ def _apresentar_escolhas_iniciais_classe(config, chat_id, message_id, classe_esc
     telegram_actions.edit_telegram_message(config.TELEGRAM_TOKEN, chat_id, message_id, f"Você escolheu a classe <b>{nome_classe_exibido}</b>. Seus talentos iniciais foram definidos.")
     _apresentar_escolha_pericias(config, chat_id, None, classe_escolhida, player_ref, ficha_atualizada)
 
-
 def handle_criar_personagem_command(config, user_id, chat_id, player_ref):
-    player_ref.set({'estado_criacao': 'AGUARDANDO_NOME', 'ficha_em_criacao': {}}, merge=False)
+    """Inicia o processo de criação de personagem, já com a estrutura de moeda."""
+    ficha_inicial = {
+        'currency': { 'dracmas_aco': 0, 'cravos_prata': 0, 'fragmentos_ferro': 0 },
+        'inventory': []
+    }
+    player_ref.set({'estado_criacao': 'AGUARDANDO_NOME', 'ficha_em_criacao': ficha_inicial}, merge=False)
     telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "⚔️ Vamos forjar o seu destino... Por qual nome você é conhecido nestas terras?")
 
 def handle_creation_message(config, user_id, chat_id, user_text, player_ref, player_data):
+    """Lida com as mensagens de texto durante a criação do personagem."""
     estado_atual = player_data.get('estado_criacao')
     
     if estado_atual == 'AGUARDANDO_NOME':
@@ -92,8 +150,8 @@ def handle_creation_message(config, user_id, chat_id, user_text, player_ref, pla
         player_ref.update({'ficha_em_criacao.falha': user_text})
         _finalizar_criacao(config, chat_id, player_ref)
 
-
 def handle_creation_callback(config, user_id, chat_id, message_id, callback_data, player_ref, player_data):
+    """Lida com os callbacks de botões durante a criação do personagem."""
     ficha_em_criacao = player_data.get('ficha_em_criacao', {})
     
     if callback_data.startswith('race_choice:'):
@@ -112,17 +170,8 @@ def handle_creation_callback(config, user_id, chat_id, message_id, callback_data
         valores_formatados = f"({', '.join(map(str, valores))})"
         texto = f"Agora, defina seus Atributos Fundamentais usando os valores: <b>{valores_formatados}</b>.\n\nComeçando pelo valor mais alto, <b>{valores[0]}</b>. Onde você deseja aplicá-lo?"
         
-        # --- CORREÇÃO AQUI: Construção explícita e segura do teclado ---
         botoes_objetos = [{'text': f'{utils.obter_nome_completo_atributo(attr_k)} ({attr_k})', 'callback_data': f'distribute_attr:{valores[0]}:{attr_k}'} for attr_k in utils.ATRIBUTOS_LISTA]
-        teclado_final = []
-        linha_atual = []
-        for botao in botoes_objetos:
-            linha_atual.append(botao)
-            if len(linha_atual) == 2:
-                teclado_final.append(linha_atual)
-                linha_atual = []
-        if linha_atual: # Adiciona a última linha se ela não estiver completa
-            teclado_final.append(linha_atual)
+        teclado_final = [botoes_objetos[i:i + 2] for i in range(0, len(botoes_objetos), 2)]
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, texto, {'inline_keyboard': teclado_final})
 
     elif callback_data.startswith('distribute_attr:'):

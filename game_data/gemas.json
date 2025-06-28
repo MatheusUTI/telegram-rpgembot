@@ -1,0 +1,89 @@
+{
+    "tamanhos": {
+      "pequena": {
+        "nome_prefixo": "Pequeno",
+        "multiplicador_valor": 1,
+        "chance_drop": 70
+      },
+      "media": {
+        "nome_prefixo": "Médio",
+        "multiplicador_valor": 3,
+        "chance_drop": 25
+      },
+      "grande": {
+        "nome_prefixo": "Grande",
+        "multiplicador_valor": 5,
+        "chance_drop": 5
+      }
+    },
+    "essencias": {
+      "coracao_montanha": {
+        "nome_base": "Coração da Montanha",
+        "origem_racial": "Anão",
+        "descricao": "Uma gema que pulsa com a resiliência e a força das profundezas da terra. A essência dos Anões.",
+        "efeitos": {
+          "arma": {
+            "texto_exibicao": "+{} de Dano de Contusão",
+            "tipo_bonus": "dano_contusao",
+            "valor_base": 1
+          },
+          "armadura": {
+            "texto_exibicao": "+{} de Constituição",
+            "tipo_bonus": "atributo_con",
+            "valor_base": 1
+          }
+        }
+      },
+      "estilhaco_estrela": {
+        "nome_base": "Estilhaço de Estrela",
+        "origem_racial": "Elfo",
+        "descricao": "Um fragmento de luz estelar cristalizada, imbuído da graça e precisão dos Elfos.",
+        "efeitos": {
+          "arma": {
+            "texto_exibicao": "+{}% de Chance de Acerto Crítico",
+            "tipo_bonus": "chance_critico",
+            "valor_base": 1
+          },
+          "armadura": {
+            "texto_exibicao": "+{} de Destreza",
+            "tipo_bonus": "atributo_des",
+            "valor_base": 1
+          }
+        }
+      },
+      "fragmento_vontade": {
+        "nome_base": "Fragmento de Vontade",
+        "origem_racial": "Humano",
+        "descricao": "Uma gema que brilha com uma luz instável, refletindo a ambição e o potencial ilimitado da Humanidade.",
+        "efeitos": {
+          "arma": {
+            "texto_exibicao": "Ataques têm {}% de chance de inspirar aliados próximos, concedendo vantagem no próximo ataque.",
+            "tipo_bonus": "chance_inspirar",
+            "valor_base": 5
+          },
+          "armadura": {
+            "texto_exibicao": "+{} de Carisma",
+            "tipo_bonus": "atributo_car",
+            "valor_base": 1
+          }
+        }
+      },
+      "semente_da_sorte": {
+        "nome_base": "Semente da Sorte",
+        "origem_racial": "Halfling",
+        "descricao": "Uma semente petrificada, de aparência humilde, mas que pulsa com uma sorte inexplicável. A essência da resiliência e do oportunismo Halfling.",
+        "efeitos": {
+          "arma": {
+            "texto_exibicao": "+{}% de chance de encontrar moedas extras ao derrotar inimigos.",
+            "tipo_bonus": "bonus_encontrar_tesouro",
+            "valor_base": 5
+          },
+          "armadura": {
+            "texto_exibicao": "+{} em todos os Testes de Resistência.",
+            "tipo_bonus": "bonus_tr_todos",
+            "valor_base": 1
+          }
+        }
+      }
+    }
+  }
