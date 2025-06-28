@@ -1,16 +1,17 @@
 # modules/game_logic/adventure_handler.py
-# Versão COMPLETA E CORRETA com UUIDs para cada item.
+# Versão com cache-busting de URL na ficha de personagem.
 
 import json
 import random
 import re
-import uuid # Importa a biblioteca para gerar UUIDs
+import uuid
+import time # Importa a biblioteca de tempo
 from firebase_admin import firestore
 from modules import telegram_actions
 from modules.game_logic import utils
 
+# ... (As funções _registrar_memoria, _gerar_gema, _gerar_item_magico e _processar_tabela_de_loot permanecem inalteradas) ...
 def _registrar_memoria(config, player_ref, ficha, acao_jogador, narracao_mestre):
-    """Usa o 'Cronista' para extrair um fato da interação e o armazena na memória do jogador."""
     try:
         prompt = config.PROMPTS['cronista'].format(json.dumps(ficha, ensure_ascii=False), acao_jogador, narracao_mestre)
         convo_cronista = config.model.start_chat(history=[])
@@ -22,7 +23,6 @@ def _registrar_memoria(config, player_ref, ficha, acao_jogador, narracao_mestre)
         print(f"ERRO ao registrar memória: {e}")
 
 def _gerar_gema(config):
-    """Constrói um objeto de gema dinamicamente com base nas regras de gemas.json."""
     gemas_data = config.GEMAS_DATA
     if not gemas_data: return None
     tamanhos = gemas_data.get('tamanhos', {})
@@ -43,7 +43,7 @@ def _gerar_gema(config):
         valor_final = efeito_info.get('valor_base', 1) * multiplicador
         return efeito_info.get('texto_exibicao', "").format(valor_final)
     gema_final = {
-        "uuid": str(uuid.uuid4()), # Adiciona um UUID único
+        "uuid": str(uuid.uuid4()),
         "nome_exibido": f"{tamanho_info.get('nome_prefixo', '')} {essencia_info.get('nome_base', '')}",
         "tipo_item": "gema",
         "origem_racial": essencia_info.get('origem_racial', ''),
@@ -55,28 +55,21 @@ def _gerar_gema(config):
     return gema_final
 
 def _gerar_item_magico(config, id_item_base, raridade_maxima):
-    """Gera um item (comum ou mágico) com base num item base, com UUID e engastes potenciais."""
     base_item = config.BASE_ITEMS_DATA.get(id_item_base)
     if not base_item: return None
-    
     item_gerado = base_item.copy()
-    item_gerado["uuid"] = str(uuid.uuid4()) # Adiciona um UUID único a todo item gerado
-
+    item_gerado["uuid"] = str(uuid.uuid4())
     raridades = ["Comum", "Incomum", "Raro", "Épico"]
     indice_max = raridades.index(raridade_maxima) if raridade_maxima in raridades else 0
-    
     roll = random.randint(1, 100)
     if roll <= 60 or indice_max == 0: indice_final = 0
     elif roll <= 85: indice_final = 1
     elif roll <= 98: indice_final = 2
     else: indice_final = 3
-    
     indice_final = min(indice_final, indice_max)
     raridade_final = raridades[indice_final]
-
     item_gerado['raridade'] = raridade_final
     item_gerado['efeitos'] = []
-
     if raridade_final == "Comum":
         item_gerado['nome_exibido'] = base_item['nome_base']
     else:
@@ -84,11 +77,9 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
         if raridade_final == "Incomum": efeitos_a_adicionar = 1
         elif raridade_final == "Raro": efeitos_a_adicionar = random.choice([1, 2])
         elif raridade_final == "Épico": efeitos_a_adicionar = random.choice([2, 3])
-            
         efeitos_escolhidos, tags_usadas, tem_prefixo = [], set(), False
         pool_prefixos = [p for p in config.AFFIXES_DATA.get('prefixos', {}).get(base_item.get('tipo', 'geral'), []) if raridades.index(p['raridade_minima']) <= indice_final]
         pool_sufixos = [s for s in config.AFFIXES_DATA.get('sufixos', {}).get('geral', []) if raridades.index(s['raridade_minima']) <= indice_final]
-        
         for _ in range(efeitos_a_adicionar):
             pool_prefixos_filtrado = [p for p in pool_prefixos if not any(tag in tags_usadas for tag in p.get('incompativel_com', []))]
             pool_sufixos_filtrado = [s for s in pool_sufixos if not any(tag in tags_usadas for tag in s.get('incompativel_com', []))]
@@ -96,7 +87,6 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
             if pool_prefixos_filtrado and not tem_prefixo: escolha_pool.append('prefixo')
             if pool_sufixos_filtrado: escolha_pool.append('sufixo')
             if not escolha_pool: break
-            
             tipo_sorteado = random.choice(escolha_pool)
             if tipo_sorteado == 'prefixo':
                 afixo = random.choice(pool_prefixos_filtrado)
@@ -105,7 +95,6 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
                 afixo = random.choice(pool_sufixos_filtrado)
                 efeitos_escolhidos.append(afixo); pool_sufixos.remove(afixo)
             tags_usadas.update(afixo.get('tags', []))
-
         nome_para_magia = base_item.get('nome_singular', base_item['nome_base'])
         lista_efeitos_desc = []
         prefixo_nome, sufixo_nome = "", ""
@@ -113,12 +102,10 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
             if afixo['posicao'] == 'prefixo': prefixo_nome = f"{afixo['nome']} "
             else: sufixo_nome = f" {afixo['nome']}"
             lista_efeitos_desc.append(afixo['efeito'])
-        
         nome_final = f"{prefixo_nome}{nome_para_magia}{sufixo_nome}"
         item_gerado['nome_exibido'] = nome_final.strip()
         item_gerado['descricao_final'] = f"{base_item['descricao_base']}\n<b>Efeitos Mágicos:</b> {'; '.join(lista_efeitos_desc)}"
         item_gerado['efeitos'] = lista_efeitos_desc
-
     max_engastes = base_item.get('engastes_max', 0)
     num_engastes = 0
     if max_engastes > 0:
@@ -128,10 +115,8 @@ def _gerar_item_magico(config, id_item_base, raridade_maxima):
                 num_engastes = max_engastes
             else:
                 num_engastes = random.randint(1, max_engastes)
-
     if num_engastes > 0:
         item_gerado['engastes'] = [{'gema': None} for _ in range(num_engastes)]
-
     return item_gerado
 
 def _processar_tabela_de_loot(config, player_ref, tabela_id):
@@ -164,7 +149,7 @@ def _processar_tabela_de_loot(config, player_ref, tabela_id):
             itens_para_adicionar.append(gema_gerada)
     if itens_para_adicionar: player_ref.update({'ficha.inventario': firestore.ArrayUnion(itens_para_adicionar)})
     return "Você encontra:\n" + "\n".join(loot_encontrado_texto) if loot_encontrado_texto else None
-
+    
 def handle_start_command(config, user_id, chat_id, player_doc):
     if player_doc.exists and 'ficha' in player_doc.to_dict():
         nome_personagem = player_doc.to_dict().get('ficha', {}).get('nome', 'Aventureiro(a)')
@@ -174,10 +159,16 @@ def handle_start_command(config, user_id, chat_id, player_doc):
     else:
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Sua lenda ainda não foi escrita. Use /criar_personagem para forjar seu destino.")
 
+# --- FUNÇÃO DE FICHA ATUALIZADA ---
 def handle_ficha_command(config, user_id, chat_id, player_doc):
-    hosting_url = "https://meu-rpg-duna.web.app"
+    """Lida com o comando /ficha, adicionando um cache buster de URL."""
+    hosting_url = "https://rpgem-bot.web.app"  # Use a sua URL base do Firebase Hosting
     if player_doc.exists and 'ficha' in player_doc.to_dict():
-        teclado = {'inline_keyboard': [[{'text': '📜 Abrir Ficha de Personagem', 'web_app': {'url': hosting_url}}]]}
+        # --- ALTERAÇÃO ARQUITETURAL: Força um URL único para cada vez ---
+        cache_buster = f"?t={int(time.time())}"
+        url_com_buster = f"{hosting_url}{cache_buster}"
+        
+        teclado = {'inline_keyboard': [[{'text': '📜 Abrir Ficha de Personagem', 'web_app': {'url': url_com_buster}}]]}
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Aqui está sua ficha de aventureiro. Clique no botão abaixo para abri-la.", teclado)
     else:
         telegram_actions.send_telegram_message(config.TELEGRAM_TOKEN, chat_id, "Você precisa criar um personagem primeiro! Use o comando /criar_personagem.")

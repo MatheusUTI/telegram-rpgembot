@@ -1,5 +1,5 @@
 # main.py
-# O orquestrador principal que liga todos os nossos módulos e serviços.
+# Versão final com enriquecimento de dados na API da ficha.
 
 import os
 import json
@@ -13,21 +13,17 @@ from firebase_admin import firestore
 import google.generativeai as genai
 import logging
 
-# Importar nossos novos módulos e arquivos
 from modules import data_loader, telegram_actions
 from modules.game_logic import character_creator, adventure_handler, socketing_handler
-from modules.game_logic.utils import calcular_ficha_efetiva # --- ALTERAÇÃO ARQUITETURAL ---
+from modules.game_logic.utils import calcular_ficha_efetiva # Importa a função de cálculo
 import prompts
 
-# --- Configuração do Logging Profissional ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - [main] - %(message)s')
 
-# --- Classe de Configuração para passar dependências ---
 class GameConfig:
     """Agrupa todas as configurações e dados carregados para passar para os handlers."""
     def __init__(self):
         logging.info("Inicializando GameConfig...")
-        
         dados_jogo = data_loader.carregar_dados_jogo()
         self.CLASSES_DATA = dados_jogo.get('classes', {})
         self.RACAS_DATA = dados_jogo.get('racas', {})
@@ -36,11 +32,11 @@ class GameConfig:
         self.LOOT_TABLES_DATA = dados_jogo.get('loot_tables', {})
         self.GEMAS_DATA = dados_jogo.get('gemas', {})
         
-        self.TELEGRAM_TOKEN = "8185946655:AAGfyNTARWgaRU5ddoFG9hHR-7kPqMCjzo0"
-        self.GEMINI_API_KEY = "AIzaSyDIzFVMGmNp7yg8ovN8o0KHML5DT86b7ho"
+        self.TELEGRAM_TOKEN = "8185946655:AAGfyNTARWgaRU5ddoFG9hHR-7kPqMCjzo0" # Substitua por variável de ambiente em produção
+        self.GEMINI_API_KEY = "AIzaSyDIzFVMGmNp7yg8ovN8o0KHML5DT86b7ho" # Substitua por variável de ambiente em produção
 
         if not self.TELEGRAM_TOKEN or not self.GEMINI_API_KEY:
-            logging.error("ERRO CRÍTICO: Tokens de API não definidos na GameConfig!")
+            logging.error("ERRO CRÍTICO: Tokens de API não definidos!")
         
         genai.configure(api_key=self.GEMINI_API_KEY)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
@@ -53,20 +49,14 @@ class GameConfig:
         }
         logging.info("GameConfig inicializado com sucesso.")
 
-# --- INICIALIZAÇÃO GLOBAL ---
-logging.info("Iniciando inicialização global do main.py...")
 if not firebase_admin._apps:
     firebase_admin.initialize_app()
 db = firestore.client()
 config = GameConfig()
-logging.info("Inicialização global do main.py concluída.")
 
-
-# ==============================================================================
-# === CLOUD FUNCTION 1: O WEBHOOK DO BOT DO TELEGRAM                          ===
-# ==============================================================================
 @functions_framework.http
 def rpg_bot_webhook(request):
+    """Webhook principal que recebe e roteia todas as interações do Telegram."""
     update = request.get_json(silent=True)
     if not update: return "OK", 200
 
@@ -120,11 +110,9 @@ def rpg_bot_webhook(request):
     
     return "OK", 200
 
-# ==============================================================================
-# === CLOUD FUNCTION 2: A API SEGURA PARA A FICHA DE PERSONAGEM              ===
-# ==============================================================================
 @functions_framework.http
 def get_char_sheet(request):
+    """API segura para a ficha de personagem web, agora com enriquecimento de dados."""
     headers = {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type'}
     if request.method == 'OPTIONS': return ('', 204, headers)
     
@@ -154,20 +142,25 @@ def get_char_sheet(request):
         player_doc = player_ref.get()
 
         if player_doc.exists:
-            # --- ALTERAÇÃO ARQUITETURAL ---
-            # Pega a ficha 'crua' do banco de dados
             player_data = player_doc.to_dict()
             ficha_base = player_data.get('ficha', {})
             
-            # Calcula a ficha efetiva com todos os bônus
+            # 1. Enriquece a ficha base com informações completas de raça e classe
+            raca_key = ficha_base.get('raca')
+            classe_key = ficha_base.get('classe')
+            if raca_key:
+                ficha_base['raca_info'] = config.RACAS_DATA.get(raca_key, {})
+            if classe_key:
+                ficha_base['classe_info'] = config.CLASSES_DATA.get(classe_key, {})
+
+            # 2. Calcula a ficha efetiva com todos os bônus
             ficha_efetiva = calcular_ficha_efetiva(ficha_base)
             
-            # Cria um novo dicionário de resposta com a ficha efetiva
+            # 3. Prepara a resposta final com a ficha efetiva e enriquecida
             response_data = player_data
             response_data['ficha'] = ficha_efetiva
             
             return (json.dumps(response_data, ensure_ascii=False), 200, headers)
-            # --- FIM DA ALTERAÇÃO ---
         else:
             return ({'error': 'Ficha não encontrada.'}, 404, headers)
             
